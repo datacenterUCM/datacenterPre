@@ -1,0 +1,10 @@
+{
+
+  "thingId":"org.eclipse.ditto:node1",
+
+  "temp": 1, 
+  "tempUnits": "C",
+
+  "action": "temp"
+
+}

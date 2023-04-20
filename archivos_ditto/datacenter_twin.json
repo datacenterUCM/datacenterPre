@@ -1,0 +1,127 @@
+{
+    "thingId": "org.eclipse.ditto:sergio-room-v1",
+    "policyId": "org.eclipse.ditto:sergio-room-v1",
+    "definition": "digitaltwin:DigitaltwinExample:1.0.0",
+    "attributes": {
+      "location": "sergio's room"
+    },
+    "features": {
+      "node1Val": {
+        "properties": {
+          "temp": 30,
+          "rh": 30
+        }
+      },
+      "node1Loc":{
+          "properties":{
+              "x": 0,
+              "y": 0,
+              "z": 0
+          }
+      },
+      "node2Val": {
+        "properties": {
+          "temp": 20,
+          "rh": 40
+        }
+      },
+      "node2Loc":{
+        "properties":{
+            "x": 3,
+            "y": 0,
+            "z": 0
+        }
+    },
+      "node3Val": {
+        "properties": {
+          "temp": 20,
+          "rh": 40
+        }
+      },
+      "node3Loc":{
+        "properties":{
+            "x": 0,
+            "y": 0,
+            "z": 3
+        }
+    },
+      "node4Val": {
+        "properties": {
+          "temp": 20,
+          "rh": 40
+        }
+      },
+      "node4Loc":{
+        "properties":{
+            "x": 3,
+            "y": 0,
+            "z": 3
+        }
+    },
+      "node5Val": {
+        "properties": {
+          "temp": 20,
+          "rh": 40
+        }
+      },
+      "node5Loc":{
+        "properties":{
+            "x": 0,
+            "y": 3,
+            "z": 0
+        }
+    },
+      "node6Val": {
+        "properties": {
+          "temp": 20,
+          "rh": 40
+        }
+      },
+      "node6Loc":{
+        "properties":{
+            "x": 0,
+            "y": 3,
+            "z": 3
+        }
+    },
+      "node7Val": {
+        "properties": {
+          "temp": 20,
+          "rh": 40
+        }
+      },
+      "node7Loc":{
+        "properties":{
+            "x": 3,
+            "y": 3,
+            "z": 0
+        }
+    },
+      "node8Val": {
+        "properties": {
+          "temp": 20,
+          "rh": 40
+        }
+      },
+      "node8Loc":{
+        "properties":{
+            "x": 3,
+            "y": 3,
+            "z": 3
+        }
+    },
+      "node9Val": {
+        "properties": {
+          "temp": 30,
+          "rh": 60
+        }
+      },
+      "node9Loc":{
+        "properties":{
+            "x": 1.5,
+            "y": 1.5,
+            "z": 1.5
+        }
+    }
+    }
+  }

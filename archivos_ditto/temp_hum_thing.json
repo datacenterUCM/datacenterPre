@@ -1,0 +1,22 @@
+{
+    "definition": "digitaltwin:DigitaltwinExample:1.0.0",
+    "attributes": {
+      "locationX": 0,
+      "locationY": 1,
+      "locationZ": 3
+    },
+    "features": {
+        "temperature": {
+            "properties": {
+              "measurement": 22, 
+              "units": "C"
+            }
+          },
+          "humidity": {
+            "properties": {
+              "measurement": 40, 
+              "units": "rh"
+            }
+        }
+    }
+}

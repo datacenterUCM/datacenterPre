@@ -1,0 +1,8 @@
+{
+    "thingId":"org.eclipse.ditto:node1",
+
+    "hum": 50, 
+    "humUnits": "C",
+  
+    "action": "hum"
+}

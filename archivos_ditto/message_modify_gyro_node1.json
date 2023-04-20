@@ -1,0 +1,15 @@
+{
+    "thingId":"org.eclipse.ditto:node1",
+
+    "gyroX": 12, 
+    "gyroUnitsX": "rad_s",
+    "gyroFactorX":1,
+    "gyroY": 47, 
+    "gyroUnitsY": "rpm",
+    "gyroFactorY":1,
+    "gyroZ": 23, 
+    "gyroUnitsZ": "rad_s",
+    "gyroFactorZ":1,
+  
+    "action": "gyro"
+}

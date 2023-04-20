@@ -1,0 +1,136 @@
+/**
+ * Maps the passed parameters to a Ditto Protocol message.
+ * @param {Object.<string, string>} headers - The headers Object containing all received header values
+ * @param {string} [textPayload] - The String to be mapped
+ * @param {ArrayBuffer} [bytePayload] - The bytes to be mapped as ArrayBuffer
+ * @param {string} [contentType] - The received Content-Type, e.g. "application/json"
+ * @returns {(DittoProtocolMessage|Array<DittoProtocolMessage>)} dittoProtocolMessage(s) -
+ *  The mapped Ditto Protocol message,
+ *  an array of Ditto Protocol messages or
+ *  <code>null</code> if the message could/should not be mapped
+ */
+function mapToDittoProtocolMsg(
+    headers,
+    textPayload,
+    bytePayload,
+    contentType
+  ) {
+  
+    // ### Insert/adapt your mapping logic here.
+    // Use helper function Ditto.buildDittoProtocolMsg to build Ditto protocol message
+    // based on incoming payload.
+    // See https://www.eclipse.org/ditto/connectivity-mapping.html#helper-functions for details.
+  
+    // ### example code assuming the Ditto protocol content type for incoming messages.
+   const jsonString = String.fromCharCode.apply(null, new Uint8Array(bytePayload));
+      const jsonData = JSON.parse(jsonString); 
+      const thingId = jsonData.thingId.split(':');
+      var value = {};
+
+      if(thingId[1] == "sergio-room-v1"){
+          if(jsonData.node == 1){
+              value = {
+                  node1: {
+                      properties: {
+                        temp: jsonData.temp, 
+                        rh: jsonData.hum
+                      }
+                  }
+              }
+          }
+          else if (jsonData.node == 2){
+              value = {
+                  node2: {
+                      properties: {
+                        temp: jsonData.temp, 
+                        rh: jsonData.hum
+                      }
+                  }
+              }
+          }
+          else if (jsonData.node == 3){
+            value = {
+                node3: {
+                    properties: {
+                      temp: jsonData.temp, 
+                      rh: jsonData.hum
+                    }
+                }
+            }
+        }
+        else if (jsonData.node == 4){
+            value = {
+                node4: {
+                    properties: {
+                      temp: jsonData.temp, 
+                      rh: jsonData.hum
+                    }
+                }
+            }
+        }
+        else if (jsonData.node == 5){
+            value = {
+                node5: {
+                    properties: {
+                      temp: jsonData.temp, 
+                      rh: jsonData.hum
+                    }
+                }
+            }
+        }
+        else if (jsonData.node == 6){
+            value = {
+                node6: {
+                    properties: {
+                      temp: jsonData.temp, 
+                      rh: jsonData.hum
+                    }
+                }
+            }
+        }
+        else if (jsonData.node == 7){
+            value = {
+                node7: {
+                    properties: {
+                      temp: jsonData.temp, 
+                      rh: jsonData.hum
+                    }
+                }
+            }
+        }
+        else if (jsonData.node == 8){
+            value = {
+                node8: {
+                    properties: {
+                      temp: jsonData.temp, 
+                      rh: jsonData.hum
+                    }
+                }
+            }
+        }
+        else if (jsonData.node == 9){
+            value = {
+                node9: {
+                    properties: {
+                      temp: jsonData.temp, 
+                      rh: jsonData.hum
+                    }
+                }
+            }
+        }
+
+      }
+      
+      return Ditto.buildDittoProtocolMsg(
+          thingId[0], // your namespace 
+          thingId[1], 
+          'things', // we deal with a thing
+          'twin', // we want to update the twin
+          'commands', // create a command to update the twin
+          'modify', // modify the twin
+          '/features', // modify all features at once
+          headers, 
+          value
+      );
+  }
+  

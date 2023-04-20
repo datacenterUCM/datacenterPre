@@ -1,0 +1,31 @@
+{
+    "thingId":"org.eclipse.ditto:node1",
+
+    "temp": 10, 
+    "tempUnits": "C",
+
+    "hum": 99, 
+    "humUnits": "rh",
+
+    "gyroX": 12, 
+    "gyroUnitsX": "rad_s",
+    "gyroFactorX":1,
+    "gyroY": 47, 
+    "gyroUnitsY": "rpm",
+    "gyroFactorY":1,
+    "gyroZ": 23, 
+    "gyroUnitsZ": "rad_s",
+    "gyroFactorZ":1,
+
+    "acelX": 12,
+    "acelUnitsX": "g",
+    "acelFactorX":16,
+    "acelY": 47, 
+    "acelUnitsY": "g",
+    "acelFactorY":16,
+    "acelZ": 99, 
+    "acelUnitsZ": "g",
+    "acelFactorZ":1
+}
+
+
