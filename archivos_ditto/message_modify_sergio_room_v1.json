@@ -1,0 +1,7 @@
+{
+    "thingId" : "org.eclipse.ditto:sergio-room-v1",
+    "type" : "measurements",
+    "node" : 1,
+    "temp" : 11,
+    "hum": 11
+}

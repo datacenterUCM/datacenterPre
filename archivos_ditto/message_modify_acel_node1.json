@@ -1,0 +1,15 @@
+{
+    "thingId":"org.eclipse.ditto:node1",
+
+    "acelX": 12,
+    "acelUnitsX": "g",
+    "acelFactorX":16,
+    "acelY": 47, 
+    "acelUnitsY": "g",
+    "acelFactorY":16,
+    "acelZ": 99, 
+    "acelUnitsZ": "g",
+    "acelFactorZ":1,
+  
+    "action": "acel"
+}

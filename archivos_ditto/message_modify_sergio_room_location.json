@@ -1,0 +1,12 @@
+{
+    "thingId":"org.eclipse.ditto:sergio-room-v1",
+
+    "type":"location",
+
+    "node":1,
+
+    "x": 2, 
+    "y": 2,
+    "z": 2
+
+}

@@ -1,0 +1,9 @@
+{
+    "thingId":"org.eclipse.ditto:temp-hum-thing",
+
+    "temp": 99, 
+    "tempUnits": "C",
+
+    "hum": 99, 
+    "humUnits": "rh"
+}

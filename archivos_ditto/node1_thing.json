@@ -1,0 +1,47 @@
+{
+    "definition": "node1",
+    "attributes": {
+      "id": "01",
+      "nodeType":"tempHumGyroAcel"
+    },
+    "features": {
+      "temperature": {
+        "properties": {
+          "measurement": 22, 
+          "units": "C"
+        }
+      },
+      "humidity": {
+        "properties": {
+          "measurement": 40, 
+          "units": "rh"
+        }
+      },
+      "gyroscope": {
+        "properties": {
+          "measurementX": 12, 
+          "unitsX": "rad_s",
+          "factorX":1,
+          "measurementY": 47, 
+          "unitsY": "rad_s",
+          "factorY":1,
+          "measurementZ": 23, 
+          "unitsZ": "rad_s",
+          "factorZ":1
+        }
+      },
+      "acelerometer": {
+        "properties": {
+          "measurementX": 12,
+          "unitsX": "g",
+          "factorX":16,
+          "measurementY": 47, 
+          "unitsY": "g",
+          "factorY":16,
+          "measurementZ": 23, 
+          "unitsZ": "g",
+          "factorZ":16
+        }
+      }
+    }
+  }
