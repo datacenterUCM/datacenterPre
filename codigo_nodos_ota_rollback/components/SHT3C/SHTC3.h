@@ -1,0 +1,1 @@
+void read_T_H (float *temp, float *rh);
