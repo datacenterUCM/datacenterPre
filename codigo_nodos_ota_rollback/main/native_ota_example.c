@@ -75,6 +75,9 @@ static const char *otaTopic = "/datacenter/ota";
 static const char *alarmModuleTopic = "/datacenter/alarmModule";
 static const char *dittoTopic = "eclipse-ditto-sandbox/org.eclipse.ditto:sergio-room-v1/things/twin/commands/modify";
 static const char *generalReportTopic = "/datacenter/generalReport";
+static const char *movementDetectedTopic = "/datacenter/movement";
+static const char *setThresholdTopic = "/datacenter/setThresh";
+static const char *setTimeoutTopic = "/datacenter/setTimeout";
 // static char newImageUrl[50] = "https://192.168.4.1:8070/"; //Se está usando la url especificada por menuconfig
 
 static gpio_num_t i2c_gpio_sda = 10;
@@ -110,6 +113,16 @@ static const uint8_t accelxReg = ICM42670_REG_ACCEL_DATA_X1;
 static const uint8_t accelyReg = ICM42670_REG_ACCEL_DATA_Y1;
 static const uint8_t accelzReg = ICM42670_REG_ACCEL_DATA_Z1;
 icm42670_t device = {0};
+// Este valor es el umbral de vibración a partir del cual se detecta movimiento.
+static uint16_t vibThres;
+// Este es el tiempo que debería transcurrir entre vibraciones de la máquina de frio (m).
+static uint16_t vibTime;
+// Llaves para la nvs 
+char *vibTimeKey = "vibTime";
+char *vibThresKey = "vibThres";
+
+// Handle para la nvs
+nvs_handle_t nvsHandle;
 
 // Esta variable sirve para indicar si el estado de la máquina de frio es el correcto
 // Cambiará a false cuando haya transcurrido un tiempo desde que no se detectan vibraciones en la máquina.
@@ -199,12 +212,6 @@ void accelAlarmTask(void *pvParameters)
     int16_t avgAccelDataY = 0;
     int16_t avgAccelDataZ = 0;
 
-    // Este valor es el umbral de vibración a partir del cual se detecta movimiento.
-    const int vibThres = 200;
-
-    // Este es el tiempo que debería transcurrir entre vibraciones de la máquina de frio (s).
-    const int vibTime = 20;
-
     clock_t timer = clock();
 
     const char *type = "airConditionateAlarm";
@@ -227,6 +234,21 @@ void accelAlarmTask(void *pvParameters)
             // Cada vez que se detecta movimiento se resetea el reloj.
             timer = clock();
 
+            // Cada vez que se detecta movimiento se avisa por mqtt
+            cJSON *root = cJSON_CreateObject();
+
+            cJSON_AddStringToObject(root, "type", type);
+            cJSON_AddNumberToObject(root, "node", nodeId);
+            cJSON_AddNumberToObject(root, "xValue", accelDataX);
+            cJSON_AddNumberToObject(root, "yValue", accelDataY);
+            cJSON_AddNumberToObject(root, "zValue", accelDataZ);
+            cJSON_AddNumberToObject(root, "xAVGValue", avgAccelDataX);
+            cJSON_AddNumberToObject(root, "yAVGValue", avgAccelDataY);
+            cJSON_AddNumberToObject(root, "zAVGValue", avgAccelDataZ);
+            const char *buf = cJSON_Print(root);
+            cJSON_Delete(root);
+            esp_mqtt_client_publish(client, movementDetectedTopic, buf, 0, 0, 0);
+
             airConditioningOk = true;
             vTaskDelay(1000 / portTICK_PERIOD_MS);
         }
@@ -238,9 +260,9 @@ void accelAlarmTask(void *pvParameters)
         // Si ha transcurrido más tiempo que el habitual entre vibraciones, se lanza una alarma y se marca la variable
         // de estado "airConditioningOk" como "false".
         double time = ((double)(clock() - timer)) / CLOCKS_PER_SEC;
-        if (time > vibTime && airConditioningOk == true)
+        if (time > (vibTime * 60) && airConditioningOk == true)
         {
-            ESP_LOGW(TAG, "HAN TRANSCURRIDO %ds DESDE LA ÚLTIMA VIBRACIÓN. ENVIANDO ALERTA...", vibTime);
+            ESP_LOGW(TAG, "HAN TRANSCURRIDO %dmin DESDE LA ÚLTIMA VIBRACIÓN. ENVIANDO ALERTA...", vibTime);
             airConditioningOk = false;
 
             // Se prepara un mensaje de alarma para indicar que no se han detectado las vibraciones desde hace un tiempo
@@ -858,6 +880,11 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
         esp_mqtt_client_subscribe(client, subsTopic, 2);
         esp_mqtt_client_subscribe(client, "/datacenter/ota", 2);
         esp_mqtt_client_subscribe(client, generalReportTopic, 2);
+        if (nodeId == 9)
+        {
+            esp_mqtt_client_subscribe(client, setThresholdTopic, 2);
+            esp_mqtt_client_subscribe(client, setTimeoutTopic, 2);
+        }
 
         break;
     case MQTT_EVENT_DISCONNECTED:
@@ -923,7 +950,7 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
             }
         }
         // Orden recibida para reportar el estado del sensor
-        else if (strncmp(event->topic, subsTopic, 23) || strncmp(event->topic, generalReportTopic, 25))
+        else if (strncmp(event->topic, subsTopic, 18) == 0 || strncmp(event->topic, generalReportTopic, 25) == 0)
         {
             // El mensaje que se recibe aquí es single o multi (single para cuando el servidor requiere tan sólo los datos de un nodo
             // y multi cuando se requieren datos de todos los nodos)
@@ -931,7 +958,7 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
             strncpy(type, event->data, 5);
             type[5] = '\0';
 
-            //Se obtiene la versión del firmware corriendo actualmente
+            // Se obtiene la versión del firmware corriendo actualmente
             const esp_partition_t *running = esp_ota_get_running_partition();
             esp_app_desc_t running_app_info;
             if (esp_ota_get_partition_description(running, &running_app_info) == ESP_OK)
@@ -949,6 +976,8 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
             cJSON_AddNumberToObject(root, "node", nodeId);
             cJSON_AddNumberToObject(root, "temp", (double)lastMeasurements.temp);
             cJSON_AddNumberToObject(root, "hum", (double)lastMeasurements.rh);
+            cJSON_AddNumberToObject(root, "vibTime", vibTime);
+            cJSON_AddNumberToObject(root, "vibThres", vibThres);
             if (nodeId == 9)
             {
                 cJSON_AddBoolToObject(root, "airConditioningOk", airConditioningOk);
@@ -960,7 +989,36 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
             cJSON_Delete(root);
             // lastMeasurements.temp
         }
-
+        // Orden para cambiar el umbral a partir del cual se detecta vibración
+        else if (strncmp(event->topic, setThresholdTopic, 21) == 0)
+        {
+            ESP_LOGI(TAG, "Modificando valor del umbral de vibración. Umbral anterior: %d Umbral nuevo: %.*s", vibThres, event->data_len, event->data);
+            vibThres = 0;
+            char num [5];
+            sprintf(num, "%.*s", event->data_len, event->data);
+            vibThres = atoi(num);
+            //printf("%u\n", vibThres);
+            ESP_LOGI(TAG, "Opening nvs...\n");
+            ESP_ERROR_CHECK(nvs_open("nodeIdSpace", NVS_READWRITE, &nvsHandle));
+            nvs_set_u16(nvsHandle, vibThresKey, vibThres);
+            ESP_LOGI(TAG, "vibThres set in nvs");
+            nvs_close(nvsHandle);
+        }
+        // Orden para cambiar el tiempo a partir del cual se envía una alarma de la máquina de frío
+        else if (strncmp(event->topic, setTimeoutTopic, 22) == 0)
+        {
+            ESP_LOGI(TAG, "Modificando valor del tiempo de vibración. Tiempo anterior: %d Umbral nuevo: %.*s", vibTime, event->data_len, event->data);
+            vibTime = 0;
+            char num [5];
+            sprintf(num, "%.*s", event->data_len, event->data);
+            vibTime = atoi(num);
+            //printf("%u\n", vibTime);
+            ESP_LOGI(TAG, "Opening nvs...\n");
+            ESP_ERROR_CHECK(nvs_open("nodeIdSpace", NVS_READWRITE, &nvsHandle));
+            nvs_set_u16(nvsHandle, vibTimeKey, vibTime);
+            ESP_LOGI(TAG, "vibTime set in nvs");
+            nvs_close(nvsHandle);
+        }
         break;
 
     case MQTT_EVENT_ERROR:
@@ -1035,28 +1093,31 @@ static void mqtt_app_start(void)
 
 static bool diagnostic(void)
 {
-    //Se comprueba el funcionamiento del led:
+    // Se comprueba el funcionamiento del led:
     gpio_config_t io_conf;
     io_conf.intr_type = GPIO_INTR_DISABLE;
     io_conf.pin_bit_mask = GPIO_PIN_SEL;
     io_conf.mode = GPIO_MODE_OUTPUT;
     esp_err_t errorCheck = gpio_config(&io_conf);
-    if (errorCheck != ESP_OK) return false;
+    if (errorCheck != ESP_OK)
+        return false;
 
-    //Se comprueba el funcionamiento de la nvs:
+    // Se comprueba el funcionamiento de la nvs:
     errorCheck = nvs_flash_init();
-    if(errorCheck != ESP_OK) return false;
+    if (errorCheck != ESP_OK)
+        return false;
 
-    //Se comprueba el funcionamiento del módulo wifi:
+    // Se comprueba el funcionamiento del módulo wifi:
     errorCheck = esp_netif_init();
-    if(errorCheck != ESP_OK) return false;
+    if (errorCheck != ESP_OK)
+        return false;
 
-    //Se comprueba el funcionamiento del bus I2C
+    // Se comprueba el funcionamiento del bus I2C
     errorCheck = i2cdev_init();
-    if(errorCheck != ESP_OK) return false;
+    if (errorCheck != ESP_OK)
+        return false;
 
     return true;
-    
 }
 
 void app_main(void)
@@ -1131,20 +1192,41 @@ void app_main(void)
     // Se escribe en la nvs el número/identificador del nodo
     // El ID del nodo se escribe en la nvs ya que es independiente de las nuevas imágenes que se carguen
     // en dispositivo.
-    nvs_handle_t nvsHandle;
     printf("Opening nvs...\n");
     ESP_ERROR_CHECK(nvs_open("nodeIdSpace", NVS_READWRITE, &nvsHandle));
     printf("oppened nvs\n");
-    char *key = "nodeId";
-    nvs_get_u8(nvsHandle, key, &nodeId);
+    char *nodeIdKey = "nodeId";
+    nvs_get_u8(nvsHandle, nodeIdKey, &nodeId);
     if (!(nodeId > 0 && nodeId <= 255))
     {
-        nvs_set_u8(nvsHandle, key, 9);
-        printf("nvs Set\n");
+        nvs_set_u8(nvsHandle, nodeIdKey, 9);
+        ESP_LOGI(TAG, "nodeId set in nvs\n");
     }
-    nvs_get_u8(nvsHandle, key, &nodeId);
+    nvs_get_u8(nvsHandle, nodeIdKey, &nodeId);
+
+    // Se escribe en la nvs el tiempo y el umbral de vibración
+    if (nodeId == 9)
+    {
+        ESP_ERROR_CHECK(nvs_get_u16(nvsHandle, vibTimeKey, &vibTime));
+        ESP_LOGI(TAG, "vibTime: %u\n", vibTime);
+        if (!(vibTime > 0 && vibTime <= 65535))
+        {
+            ESP_ERROR_CHECK(nvs_set_u16(nvsHandle, vibTimeKey, 10));
+            ESP_LOGI(TAG, "vibTime set in nvs");
+        }
+        nvs_get_u16(nvsHandle, vibTimeKey, &vibTime);
+
+        nvs_get_u16(nvsHandle, vibThresKey, &vibThres);
+        ESP_LOGI(TAG, "vibThres: %u\n", vibThres);
+        if (!(vibThres > 0 && vibThres <= 65535))
+        {
+            nvs_set_u16(nvsHandle, vibThresKey, 300);
+            ESP_LOGI(TAG, "vibThres set in nvs");
+        }
+        nvs_get_u16(nvsHandle, vibThresKey, &vibThres);
+    }
     nvs_close(nvsHandle);
-    printf("nodeId: %d \n", nodeId);
+    ESP_LOGI(TAG, "nodeId: %d \n", nodeId);
 
     ESP_ERROR_CHECK(esp_netif_init());
     ESP_ERROR_CHECK(esp_event_loop_create_default());

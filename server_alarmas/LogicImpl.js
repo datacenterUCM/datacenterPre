@@ -26,9 +26,16 @@ class LogicImpl {
         this.warning = "[WARNING]";
         this.info = "[INFO]";
 
+        /*this.timeoutTime = 20; // Tiempo de timeout antes de que salte la alarma de la máquina de frío, en minutos.
+        // Se define un temporizador que se encargará de enviar una alerta si ha pasado más tiempo del esperado
+        // en la máquina de frío
+        this.timeout;
+        this.resetTimeout();*/
+
     }
 
     setBot(bot) {
+        console.log("bot set");
         this.bot = bot;
     }
 
@@ -56,6 +63,8 @@ class LogicImpl {
                     this.nodeReportBuff[node] = {
                         "temp": messageJson["temp"],
                         "hum": messageJson["hum"],
+                        "vibTime": messageJson["vibTime"],
+                        "vibThres": messageJson["vibThres"],
                         "airConditioningOk": messageJson["airConditioningOk"],
                         "version": messageJson["version"],
                     };
@@ -93,6 +102,12 @@ class LogicImpl {
             else {
                 console.log("else");
             }
+        }
+        else if (topic == this.configParams.movementTopic){
+
+            //Si se recibe un mensaje diciendo que se ha detectado movimiento se resetea el temporizador de timeout.
+            //this.resetTimeout;
+            console.log("Movimiento detectado");
         }
 
     }
@@ -160,7 +175,7 @@ class LogicImpl {
 
             const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-            const node = msg.text.substring(7);
+            const node = msg.text.substring(8);
 
             //Si no se ha especificado ningún nodo se envía la información de todos los nodos
             if (node == '') {
@@ -215,6 +230,34 @@ class LogicImpl {
         });
     }
 
+    // Función que se ejecuta cuando se pide modificar el valor del timeout vía telegram
+    setVibTimeout(value, mqtt){
+        return new Promise((resolve, reject) => {
+            /*this.timeoutTime = value;
+            this.resetTimeout();
+            resolve(value);*/
+            mqtt.client.publish(this.configParams.setTimetoutTopic, value);
+            resolve(value);
+        })
+    }
+
+    // Función que se ejecuta cuando se pide modificar el valor del umbral de vibración vía telegram
+    setVibThresh(value, mqtt){
+        return new Promise((resolve, reject) => {
+            mqtt.client.publish(this.configParams.setvibThresh, value);
+            resolve(value);
+        })
+    }
+
+    // Función que se ejecuta para resetear el tiempo de timeout
+    resetTimeout(){
+        clearTimeout(this.timeout);
+        this.timeout = setTimeout(function() {
+            console.log("airConditioning alarm");
+                this.bot.sendMessage(this.configParams.channelId,
+                    `${this.tag} ${this.warning} Se ha registrado una anomalía en las vibraciones de la máquina de frío`);
+          }.bind(this), this.timeoutTime * 60 * 1000);
+    }
 
 }
 

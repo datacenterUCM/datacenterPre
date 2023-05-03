@@ -38,11 +38,18 @@ class ConfigParams{
 
         //Url del broker
         //this.brokerIP = process.env.IP_BROKER; //192.168.4.1 por defecto
-        this.brokerIP = "192.168.1.151";
+        this.brokerIP = "10.42.0.1";
 
         //Tópico correspondiente a ditto. El módulo de alarmas debe escuchar en este tópico para poder analizar las posibles alarmas.
         this.dittoTopic = 'eclipse-ditto-sandbox/org.eclipse.ditto:sergio-room-v1/things/twin/commands/modify';
         this.alarmModuleTopic = '/datacenter/alarmModule';
+
+        //Tópico al que publica el nodo 9 cuando detecta movimiento
+        this.movementTopic = '/datacenter/movement';
+        //Topico para cambiar el timeout del nodo 9
+        this.setTimetoutTopic = '/datacenter/setTimeout';
+        //Topico para cambiar el umbral de vibración del nodo 9
+        this.setvibThresh = '/datacenter/setThresh';
 
     }
 

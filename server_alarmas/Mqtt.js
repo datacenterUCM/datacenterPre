@@ -25,7 +25,8 @@ class MqttModule {
 
             this.client.subscribe(this.configParams.dittoTopic);
             this.client.subscribe(this.configParams.alarmModuleTopic);
-            console.log('Connected to broker on', this.brokerIP, 'and suscribed to "/smartMonitor/server/temp"');
+            this.client.subscribe(this.configParams.movementTopic);
+            console.log('Connected to broker on', this.brokerIP);
         });
 
     }

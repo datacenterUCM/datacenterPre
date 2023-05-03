@@ -58,7 +58,7 @@ class Controller {
 
                 this.logicImpl.measureTemp().then((result) => {
 
-                    this.bot.sendMessage(msg.chat.id, "la temperatura de la raspberry es " + result);
+                    this.bot.sendMessage(msg.chat.id, "La temperatura de la raspberry es " + result);
 
                 });
 
@@ -72,6 +72,20 @@ class Controller {
 
                 })
 
+            }
+            //Comando para modificar el tiempo de timeout de la máquina de frío
+            else if(msg.text.substring( 0, 11 ) == "/setTimeout"){
+
+                this.logicImpl.setVibTimeout(msg.text.substring(12), this.mqtt).then((result) =>{
+                    this.bot.sendMessage(msg.chat.id, `Valor de timeout modificado a ${result}`);
+                })
+
+            }
+            //Comando para modificar el umbral de vibración del nodo 9
+            else if (msg.text.substring(0, 10) == "/setThresh"){
+                this.logicImpl.setVibThresh(msg.text.substring(11), this.mqtt).then((result) => {
+                    this.bot.sendMessage(msg.chat.id, `Valor del umbral de vibración modificado a ${result}`);
+                })
             }
             //Mensaje recibido de otra manera
             else {
