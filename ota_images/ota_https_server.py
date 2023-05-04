@@ -13,7 +13,7 @@ class ThreadedHTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
     pass
 
 # Crea un servidor HTTP basico
-httpd = ThreadedHTTPServer(('192.168.1.151', port), http.server.SimpleHTTPRequestHandler)
+httpd = ThreadedHTTPServer(('10.42.0.1', port), http.server.SimpleHTTPRequestHandler)
 
 # Crea un contexto SSL
 context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
