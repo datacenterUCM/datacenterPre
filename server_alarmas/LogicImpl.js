@@ -259,6 +259,20 @@ class LogicImpl {
           }.bind(this), this.timeoutTime * 60 * 1000);
     }
 
+    // Función que se ejecuta cuando se ejecuta el comando /help
+    helpRequest(){
+        return new Promise((resolve, reject) => {
+            helpMsg = {
+                "/report":"Imprime el estado de todos los nodos conectados",
+                "/report <X>":"Imprime el estado de un nodo en específico",
+                "/raspitemp":"Imprime la temperatura de la raspberry pi",
+                "/setTimeout <X>":"Cambia el tiempo que debe de transcurrir sin vibraciones en la máquina de frío para que se considere una anomalía",
+                "/setThresh <X>":"Cambia el umbral de vibración de la máquinade frío"
+            }
+            resolve (JSON.stringify(this.nodeReportBuff, null, 3))
+        })
+    }
+
 }
 
 module.exports = { LogicImpl };

@@ -54,7 +54,7 @@ class Controller {
 
             }
             //Comando para consultar la temperatura de la raspberry
-            else if (msg.text == "/raspitemp") {
+            else if (msg.text == "/raspiTemp") {
 
                 this.logicImpl.measureTemp().then((result) => {
 
@@ -85,6 +85,12 @@ class Controller {
             else if (msg.text.substring(0, 10) == "/setThresh"){
                 this.logicImpl.setVibThresh(msg.text.substring(11), this.mqtt).then((result) => {
                     this.bot.sendMessage(msg.chat.id, `Valor del umbral de vibración modificado a ${result}`);
+                })
+            }
+            //Comando para consultar los comandos disponibles
+            else if (msg.text.substring(0, 10) == "/help"){
+                this.logicImpl.helpRequest().then((result) => {
+                    this.bot.sendMessage(msg.chat.id, result);
                 })
             }
             //Mensaje recibido de otra manera

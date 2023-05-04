@@ -65,7 +65,7 @@ TaskHandle_t twinSendGetDataTaskHandle;
 TaskHandle_t otaTaskHandle;
 
 // Identificador del "thing" en eclipse ditto
-const char *thingId = "org.eclipse.ditto:sergio-room-v1";
+const char *thingId = "org.eclipse.ditto:datacentertwin";
 
 static uint8_t nodeId = 0;
 char *subsTopic[23];
@@ -73,7 +73,7 @@ char *subsTopic[23];
 // static const char* brokerUri = "mqtt://192.168.1.141:1883";
 static const char *otaTopic = "/datacenter/ota";
 static const char *alarmModuleTopic = "/datacenter/alarmModule";
-static const char *dittoTopic = "eclipse-ditto-sandbox/org.eclipse.ditto:sergio-room-v1/things/twin/commands/modify";
+static const char *dittoTopic = "eclipse-ditto-sandbox/org.eclipse.ditto:datacentertwin/things/twin/commands/modify";
 static const char *generalReportTopic = "/datacenter/generalReport";
 static const char *movementDetectedTopic = "/datacenter/movement";
 static const char *setThresholdTopic = "/datacenter/setThresh";
@@ -976,10 +976,10 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
             cJSON_AddNumberToObject(root, "node", nodeId);
             cJSON_AddNumberToObject(root, "temp", (double)lastMeasurements.temp);
             cJSON_AddNumberToObject(root, "hum", (double)lastMeasurements.rh);
-            cJSON_AddNumberToObject(root, "vibTime", vibTime);
-            cJSON_AddNumberToObject(root, "vibThres", vibThres);
             if (nodeId == 9)
             {
+                cJSON_AddNumberToObject(root, "vibTime", vibTime);
+                cJSON_AddNumberToObject(root, "vibThres", vibThres);
                 cJSON_AddBoolToObject(root, "airConditioningOk", airConditioningOk);
             }
             const char *buf = cJSON_Print(root);
@@ -1199,7 +1199,7 @@ void app_main(void)
     nvs_get_u8(nvsHandle, nodeIdKey, &nodeId);
     if (!(nodeId > 0 && nodeId <= 255))
     {
-        nvs_set_u8(nvsHandle, nodeIdKey, 9);
+        nvs_set_u8(nvsHandle, nodeIdKey, 4);
         ESP_LOGI(TAG, "nodeId set in nvs\n");
     }
     nvs_get_u8(nvsHandle, nodeIdKey, &nodeId);
