@@ -9,6 +9,14 @@ CUENTA DE GITHUB:
 Nombre de usuario: datacenterUCM
 Contraseña: digitaltwin23
 
+DITTO:
+Nombre: datacenter
+Contraseña: esp32twin
+
+RASPI:
+Usuario: datacenter
+Contraseña: 3x3=nueve
+
 Para clonar el repositorio de github es necesario usar el siguiente comando:
 git clone git@github.com:datacenterUCM/datacenter.git
 
