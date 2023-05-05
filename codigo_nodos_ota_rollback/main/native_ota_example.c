@@ -232,6 +232,12 @@ void accelAlarmTask(void *pvParameters)
         ESP_ERROR_CHECK(icm42670_read_raw_data(&device, accelyReg, &accelDataY));
         ESP_ERROR_CHECK(icm42670_read_raw_data(&device, accelzReg, &accelDataZ));
 
+        // Las medidas se toman en valor absoluto ya que, como se va a calcular la media, el resultado de esta podría ser próximo a 0 si
+        // se están tomando medidas consecutivamente positivas y negativas: media(700, -700, 700, -700) = 0
+        if (accelDataX < 0) accelDataX = -1 * accelDataX;
+        if (accelDataY < 0) accelDataY = -1 * accelDataY;
+        if (accelDataZ < 0) accelDataZ = -1 * accelDataZ;
+
         // Si alguna de las medidas tomadas varía un determinado umbral con respecto a la media anterior, se ha detectado movimiento.
         if (accelDataX > avgAccelDataX + vibThres || accelDataX < avgAccelDataX - vibThres || accelDataY > avgAccelDataY + vibThres || accelDataY < avgAccelDataY - vibThres || accelDataZ > avgAccelDataZ + vibThres || accelDataZ < avgAccelDataZ - vibThres)
         {
@@ -290,6 +296,11 @@ void accelAlarmTask(void *pvParameters)
             ESP_ERROR_CHECK(icm42670_read_raw_data(&device, accelxReg, &accelDataX));
             ESP_ERROR_CHECK(icm42670_read_raw_data(&device, accelyReg, &accelDataY));
             ESP_ERROR_CHECK(icm42670_read_raw_data(&device, accelzReg, &accelDataZ));
+
+            // Valores absolutos
+            if (accelDataX < 0) accelDataX = -1 * accelDataX;
+            if (accelDataY < 0) accelDataY = -1 * accelDataY;
+            if (accelDataZ < 0) accelDataZ = -1 * accelDataZ;
 
             avgAccelDataX = avgAccelDataX + accelDataX;
             avgAccelDataY = avgAccelDataY + accelDataY;
