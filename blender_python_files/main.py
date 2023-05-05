@@ -16,8 +16,8 @@ sideLength = 3
 sidePoints = 20
 
 # Objeto para las peticiones
-twin = DittoRequest("http://localhost:8080/api/2/things/org.eclipse.ditto:sergio-room-v1",
-                    ('sergio', 'sergiotfm'), sideLength, sidePoints)
+twin = DittoRequest("http://147.96.81.123:8080/api/2/things/org.eclipse.ditto:datacentertwin",
+                    ('datacenter', 'esp32twin'), sideLength, sidePoints)
 
 # Se determina la longitud del lado de cada "cara". Las caras son los pequeños planos cuadrados
 # que componen el mapa de calor

@@ -118,12 +118,14 @@ class LogicImpl {
     checkAlarm(messageJson) {
         const node = messageJson["node"];
         const temp = messageJson["temp"];
+        const hum = messageJson["hum"];
 
         //Esta condición se usa para ir añadiendo los nodos que no se hayan registrado aún.
         if (typeof this.nodeState[node] == 'undefined') {
-            this.nodeState[node] = { "temp": 0 }
+            this.nodeState[node] = { "temp": 0, "hum":0 }
         }
 
+        //Caso de la temperatura
         if (temp >= this.configParams.tempThreshold) {
             //El mensaje de alerta sólo se manda una vez.
             if (this.nodeState[node]["temp"] == 0) {
@@ -141,6 +143,27 @@ class LogicImpl {
                 this.bot.sendMessage(this.configParams.channelId,
                     `${this.tag} ${this.info} La temperatura del nodo ${node} ha vuelto a un valor normal`);
                 this.nodeState[node]["temp"] = 0;
+            }
+        }
+
+        //Caso de la humedad
+        if (temp >= this.configParams.humThreshold) {
+            //El mensaje de alerta sólo se manda una vez.
+            if (this.nodeState[node]["hum"] == 0) {
+                this.bot.sendMessage(this.configParams.channelId,
+                    `${this.tag} ${this.warning} La humedad ha sobrepasado los ${hum}ºC en el nodo ${node}`,
+                    //'`<span style="color:red">Texto en color rojo</span>`', 
+                    //{parse_mode: 'HTML'});
+                );
+                this.nodeState[node]["hum"] = 1;
+            }
+        }
+        //Si los valores de humedad son normales se marca como 0
+        else {
+            if (this.nodeState[node]["hum"] == 1) {
+                this.bot.sendMessage(this.configParams.channelId,
+                    `${this.tag} ${this.info} La humedad del nodo ${node} ha vuelto a un valor normal`);
+                this.nodeState[node]["hum"] = 0;
             }
         }
 
