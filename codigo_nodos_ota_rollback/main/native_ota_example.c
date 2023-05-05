@@ -391,6 +391,8 @@ static void infinite_loop(void)
 {
     int i = 0;
     ESP_LOGI(TAG, "When a new firmware is available on the server, press the reset button to download it");
+    ESP_LOGI(TAG, "La versión de la imagen a descargar no es válida. Procediendo a reseteo...");
+    esp_restart();
     while (1)
     {
         ESP_LOGI(TAG, "Waiting for a new firmware ... %d", ++i);
@@ -514,6 +516,11 @@ static void ota_task_fcn(void)
                         ESP_LOGI(TAG, "Last invalid firmware version: %s", invalid_app_info.version);
                     }
 
+                    if(atoi(new_app_info.version) < atoi(running_app_info.version)){
+                        ESP_LOGW(TAG, "La versión nueva es anterior a la actual. Reseteando...");
+                        esp_restart();
+                    }
+
                     // check current version with last invalid partition
                     if (last_invalid_app != NULL)
                     {
@@ -547,13 +554,6 @@ static void ota_task_fcn(void)
                         task_fatal_error();
                     }
                     ESP_LOGI(TAG, "esp_ota_begin succeeded");
-                    // Se va a realizar OTA, por lo que se cancelan las tareas que están corriendo
-                    // vTaskSuspend(gyroAlarmTaskHandle);
-                    // if( nodeId == 9 ){
-                    //    vTaskSuspend(accelAlarmTaskHandle);
-                    //}
-                    // vTaskSuspend(twinGetDataTaskHandle);
-                    // vTaskSuspend(twinSendGetDataTaskHandle);
                 }
                 else
                 {
