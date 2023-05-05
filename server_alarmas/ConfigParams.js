@@ -15,25 +15,6 @@ class ConfigParams {
 
         this.destinationId = '5812715209';
         this.sergioId = '5812715209';
-        //emmaId = '5839720360'
-
-        this.influxHost = '192.168.1.50';
-
-        this.influxDatabase = 'emma_app';
-
-        this.influxMeasurement = 'tiskillo';
-
-        //Measurement para la primera ejecución
-        this.influxFirstEx = 'EmmaFirstEx';
-
-        this.smilyFace = "\uD83D\uDE0A";
-        this.heart = "\u2764";
-        this.heartFace = "\uD83E\uDD70";
-        this.robot = "\uD83E\uDD16";
-        this.tis = "\uD83D\uDC36";
-        this.foldedHands = "\uD83D\uDE4F";
-        this.cat = "\uD83D\uDE3A";
-        this.snowflake = "\u2744";
 
         //Umbral máximo de temperatura en ºC y de humedad a partir del cual se dispara la alarma
         this.tempThreshold;

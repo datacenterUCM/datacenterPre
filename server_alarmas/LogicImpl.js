@@ -36,7 +36,7 @@ class LogicImpl {
     }
 
     setBot(bot) {
-        console.log("bot set");
+        //console.log("bot set");
         this.bot = bot;
     }
 
@@ -45,11 +45,11 @@ class LogicImpl {
         const messageJson = JSON.parse(message);
         if (topic == this.configParams.dittoTopic) {
             if (messageJson["type"] == 'measurements') {
-                console.log("measurements");
+                //console.log("measurements");
                 this.checkAlarm(messageJson);
             }
             if (messageJson["type"] == 'airConditionateAlarm') {
-                console.log("airConditioning alarm");
+                //console.log("airConditioning alarm");
                 this.bot.sendMessage(this.configParams.channelId,
                     `${this.tag} ${this.warning} Se ha registrado una anomalía en las vibraciones de la máquina de frío en el nodo ${messageJson["node"]}`);
             }
@@ -101,14 +101,14 @@ class LogicImpl {
 
             }*/
             else {
-                console.log("else");
+
             }
         }
         else if (topic == this.configParams.movementTopic) {
 
             //Si se recibe un mensaje diciendo que se ha detectado movimiento se resetea el temporizador de timeout.
             //this.resetTimeout;
-            console.log("Movimiento detectado");
+            //console.log("Movimiento detectado");
         }
 
     }
@@ -151,7 +151,7 @@ class LogicImpl {
             //El mensaje de alerta sólo se manda una vez.
             if (this.nodeState[node]["hum"] == 0) {
                 this.bot.sendMessage(this.configParams.channelId,
-                    `${this.tag} ${this.warning} La humedad ha sobrepasado los ${hum}ºC en el nodo ${node}`,
+                    `${this.tag} ${this.warning} La humedad ha sobrepasado el ${hum}% en el nodo ${node}`,
                     //'`<span style="color:red">Texto en color rojo</span>`', 
                     //{parse_mode: 'HTML'});
                 );
@@ -237,7 +237,7 @@ class LogicImpl {
                         //Se esperan dos segundos después de la publicación del mensaje para dar tiempo a recibir los datos
                         //por parte de los nodos. La respuesta de los nodos se guarda en un objeto dentro de la clase mqtt.
                         await wait(2000);
-                        console.log(this.nodeReportBuff);
+                        //console.log(this.nodeReportBuff);
                         if (JSON.stringify(this.nodeReportBuff, null, 3) == "{}") {
                             resolve(`No se ha podido conectar con el nodo ${node}`);
                         }
@@ -277,7 +277,7 @@ class LogicImpl {
     resetTimeout() {
         clearTimeout(this.timeout);
         this.timeout = setTimeout(function () {
-            console.log("airConditioning alarm");
+            //console.log("airConditioning alarm");
             this.bot.sendMessage(this.configParams.channelId,
                 `${this.tag} ${this.warning} Se ha registrado una anomalía en las vibraciones de la máquina de frío`);
         }.bind(this), this.timeoutTime * 60 * 1000);
