@@ -44,7 +44,7 @@ class ConfigParams {
         this.brokerIP = "10.42.0.1";
 
         //Tópico correspondiente a ditto. El módulo de alarmas debe escuchar en este tópico para poder analizar las posibles alarmas.
-        this.dittoTopic = 'eclipse-ditto-sandbox/org.eclipse.ditto:sergio-room-v1/things/twin/commands/modify';
+        this.dittoTopic = 'eclipse-ditto-sandbox/org.eclipse.ditto:datacentertwin/things/twin/commands/modify';
         this.alarmModuleTopic = '/datacenter/alarmModule';
 
         //Tópico al que publica el nodo 9 cuando detecta movimiento
