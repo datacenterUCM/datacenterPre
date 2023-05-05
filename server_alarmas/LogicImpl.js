@@ -4,6 +4,7 @@
 
 const { exec } = require('child_process');
 const { ConfigParams } = require("./ConfigParams");
+const fs = require('fs');
 
 
 class LogicImpl {
@@ -103,7 +104,7 @@ class LogicImpl {
                 console.log("else");
             }
         }
-        else if (topic == this.configParams.movementTopic){
+        else if (topic == this.configParams.movementTopic) {
 
             //Si se recibe un mensaje diciendo que se ha detectado movimiento se resetea el temporizador de timeout.
             //this.resetTimeout;
@@ -190,10 +191,10 @@ class LogicImpl {
                         //Se esperan dos segundos después de la publicación del mensaje para dar tiempo a recibir los datos
                         //por parte de los nodos. La respuesta de los nodos se guarda en un objeto dentro de la clase mqtt.
                         await wait(2000);
-                        if( JSON.stringify(this.nodeReportBuff, null, 3) == "{}" ){
-                            resolve( "No se ha podido conectar con ningún nodo" );
+                        if (JSON.stringify(this.nodeReportBuff, null, 3) == "{}") {
+                            resolve("No se ha podido conectar con ningún nodo");
                         }
-                        else{
+                        else {
                             resolve(JSON.stringify(this.nodeReportBuff, null, 3));
                         }
                     }
@@ -214,10 +215,10 @@ class LogicImpl {
                         //por parte de los nodos. La respuesta de los nodos se guarda en un objeto dentro de la clase mqtt.
                         await wait(2000);
                         console.log(this.nodeReportBuff);
-                        if (JSON.stringify(this.nodeReportBuff, null, 3) == "{}"){
-                            resolve ( `No se ha podido conectar con el nodo ${node}` );
+                        if (JSON.stringify(this.nodeReportBuff, null, 3) == "{}") {
+                            resolve(`No se ha podido conectar con el nodo ${node}`);
                         }
-                        else{
+                        else {
                             resolve(JSON.stringify(this.nodeReportBuff, null, 3));
                         }
                     }
@@ -231,7 +232,7 @@ class LogicImpl {
     }
 
     // Función que se ejecuta cuando se pide modificar el valor del timeout vía telegram
-    setVibTimeout(value, mqtt){
+    setVibTimeout(value, mqtt) {
         return new Promise((resolve, reject) => {
             /*this.timeoutTime = value;
             this.resetTimeout();
@@ -242,7 +243,7 @@ class LogicImpl {
     }
 
     // Función que se ejecuta cuando se pide modificar el valor del umbral de vibración vía telegram
-    setVibThresh(value, mqtt){
+    setVibThresh(value, mqtt) {
         return new Promise((resolve, reject) => {
             mqtt.client.publish(this.configParams.setvibThresh, value);
             resolve(value);
@@ -250,26 +251,62 @@ class LogicImpl {
     }
 
     // Función que se ejecuta para resetear el tiempo de timeout
-    resetTimeout(){
+    resetTimeout() {
         clearTimeout(this.timeout);
-        this.timeout = setTimeout(function() {
+        this.timeout = setTimeout(function () {
             console.log("airConditioning alarm");
-                this.bot.sendMessage(this.configParams.channelId,
-                    `${this.tag} ${this.warning} Se ha registrado una anomalía en las vibraciones de la máquina de frío`);
-          }.bind(this), this.timeoutTime * 60 * 1000);
+            this.bot.sendMessage(this.configParams.channelId,
+                `${this.tag} ${this.warning} Se ha registrado una anomalía en las vibraciones de la máquina de frío`);
+        }.bind(this), this.timeoutTime * 60 * 1000);
+    }
+
+    //Función que se ejecuta para modificar el umbral de temperatura o de humedad
+    setTempHum(newValue, tempHum) {
+        return new Promise((resolve, reject) => {
+
+            //Se lee el archivo que contiene los valores de configuración
+            const data = fs.readFileSync('./config_params.json', 'utf-8');
+            let jsonData = JSON.parse(data);
+
+            if (tempHum == "temp") {
+                jsonData["tempThresh"] = parseInt(newValue);
+                this.configParams.tempThreshold = parseInt(newValue);
+            }
+            else {
+                jsonData["humThresh"] = parseInt(newValue);
+                this.configParams.humThreshold = parseInt(newValue);
+            }
+            const newJsonData = JSON.stringify(jsonData, null, 4);
+            //Se guardan los cambios
+            fs.writeFileSync('./config_params.json', newJsonData);
+
+            resolve(newValue);
+        })
+    }
+
+    //Función que se ejecuta para consultar los valores de los umbrales
+    checkConfig() {
+        return new Promise((resolve, reject) => {
+            const data = fs.readFileSync('./config_params.json', 'utf-8');
+            const jsonData = JSON.parse(data);
+            resolve(JSON.stringify(jsonData, null, 3));
+        })
     }
 
     // Función que se ejecuta cuando se ejecuta el comando /help
-    helpRequest(){
+    helpRequest() {
         return new Promise((resolve, reject) => {
-            helpMsg = {
-                "/report":"Imprime el estado de todos los nodos conectados",
-                "/report <X>":"Imprime el estado de un nodo en específico",
-                "/raspitemp":"Imprime la temperatura de la raspberry pi",
-                "/setTimeout <X>":"Cambia el tiempo que debe de transcurrir sin vibraciones en la máquina de frío para que se considere una anomalía",
-                "/setThresh <X>":"Cambia el umbral de vibración de la máquinade frío"
+            const helpMsg = {
+                "/report": "Imprime el estado de todos los nodos conectados",
+                "/report <X>": "Imprime el estado de un nodo en específico",
+                "/raspitemp": "Imprime la temperatura de la raspberry pi",
+                "/setTimeout <X>": "Cambia el tiempo que debe de transcurrir sin vibraciones en la máquina de frío para que se considere una anomalía",
+                "/setThresh <X>": "Cambia el umbral de vibración de la máquinade frío",
+                "/setTemp <X>": "Cambia el umbral de temperatura a partir del cual se dispara la alarma",
+                "/setHum <X>": "Cambia el umbral de humedad a partir del cual se dispara la alarma",
+                "/configParams": "Imprime los valores de los umbrales"
             }
-            resolve (JSON.stringify(this.nodeReportBuff, null, 3))
+            resolve(JSON.stringify(helpMsg, null, 3))
         })
     }
 

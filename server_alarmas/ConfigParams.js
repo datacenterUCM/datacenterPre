@@ -2,9 +2,11 @@
 //CONFIGURATION PARAMETERS
 ///////////////////////////////////////////////////////////////////////////////
 
-class ConfigParams{
+const fs = require('fs');
 
-    constructor(){
+class ConfigParams {
+
+    constructor() {
         //El bot token se puede obtener escribiendo /token en "botfather"
         this.botToken = '5824070812:AAGswCsv6aKQ3k8C9bqNQDDzbQ00KCuaKYM';
 
@@ -33,8 +35,9 @@ class ConfigParams{
         this.cat = "\uD83D\uDE3A";
         this.snowflake = "\u2744";
 
-        //Umbral máximo de temperatura en ºC a partir del cual se dispara la alarma
-        this.tempThreshold = 35;
+        //Umbral máximo de temperatura en ºC y de humedad a partir del cual se dispara la alarma
+        this.tempThreshold;
+        this.humThreshold;
 
         //Url del broker
         //this.brokerIP = process.env.IP_BROKER; //192.168.4.1 por defecto
@@ -51,8 +54,20 @@ class ConfigParams{
         //Topico para cambiar el umbral de vibración del nodo 9
         this.setvibThresh = '/datacenter/setThresh';
 
+        //Se leen los valores del archivo json de configuración
+        this.readConfigFile();
+
     }
 
+    readConfigFile() {
+        //Se lee el archivo que contiene los valores de configuración
+        const data = fs.readFileSync('./config_params.json', 'utf-8');
+        let jsonData = JSON.parse(data);
+
+        this.tempThreshold = jsonData["tempThresh"];
+        this.humThreshold = jsonData["humThresh"];
+    }
 }
 
-module.exports = {ConfigParams};
+
+module.exports = { ConfigParams };

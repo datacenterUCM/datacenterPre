@@ -93,6 +93,24 @@ class Controller {
                     this.bot.sendMessage(msg.chat.id, result);
                 })
             }
+            //Comando para modificar el umbral de temperatura o humedad
+            else if (msg.text.substring(0, 8) == "/setTemp"){
+                this.logicImpl.setTempHum(msg.text.substring(9), "temp").then((result) => {
+                    this.bot.sendMessage(msg.chat.id, `Umbral de temperatura modificado a ${result}`);
+                })
+            }
+            //Comando para modificar el umbral de humedad
+            else if (msg.text.substring(0, 7) == "/setHum"){
+                this.logicImpl.setTempHum(msg.text.substring(8), "hum").then((result) => {
+                    this.bot.sendMessage(msg.chat.id, `Umbral de humedad modificado a ${result}`);
+                })
+            }
+            //Comando para consultar los umbrales de temperatura y humedad
+            else if (msg.text.substring(0, 13) == "/configParams"){
+                this.logicImpl.checkConfig().then((result) => {
+                    this.bot.sendMessage(msg.chat.id, result);
+                })
+            }
             //Mensaje recibido de otra manera
             else {
                 var test = this.logicImpl.test();
