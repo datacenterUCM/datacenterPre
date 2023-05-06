@@ -47,7 +47,8 @@ class LogicImpl {
             }]
 
             this.influx.insertIntoVibr(influxData).then(() => {
-                console.log(this.configParams.TAG + " Dato introducido\n");
+                const now = new Date();
+                console.log(`${this.configParams.TAG} ${now.toLocaleString()} Dato introducido\n`);
             })
 
         }
