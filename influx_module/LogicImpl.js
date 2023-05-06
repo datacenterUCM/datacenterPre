@@ -33,7 +33,8 @@ class LogicImpl {
             }];
 
             this.influx.insert(influxData).then(() => {
-                console.log(this.configParams.TAG + " Dato introducido\n")
+                const now = new Date();
+                console.log(`${this.configParams.TAG} ${now.toLocaleString()} Dato introducido\n`)
             });
         }
         // Se introduce el dato en el apartado de medidas de vibración
