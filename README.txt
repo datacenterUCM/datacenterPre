@@ -13,6 +13,10 @@ DITTO:
 Nombre: datacenter
 Contraseña: esp32twin
 
+GRAFANA
+Nombre: datacenter
+Contraseña: IoTchart1999
+
 RASPI:
 Usuario: datacenter
 Contraseña: 3x3=nueve
