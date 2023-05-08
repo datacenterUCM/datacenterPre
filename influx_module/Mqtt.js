@@ -22,7 +22,7 @@ class MqttModule {
         this.client.on('connect', () => {
             console.log('Connecting to MQTT broker on', this.brokerIP + '...');
 
-            //this.client.subscribe(this.configParams.dittoTopic);
+            this.client.subscribe(this.configParams.dittoTopic);
             this.client.subscribe(this.configParams.vibrMeasTopic);
             console.log('Connected to broker on', this.brokerIP);
         });
