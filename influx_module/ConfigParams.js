@@ -6,7 +6,7 @@ class ConfigParams{
         this.influxPort = '8086';
         this.database = 'datacenter'
         // Un "measurement" es equivalente a una tabla en sql
-        this.measurement = 'measurements'
+        this.measurement = 'measures'
         // Este measurement guarda los valores de vibraciones:
         this.vibMeasurement = 'vibrations';
 

@@ -69,10 +69,12 @@ TaskHandle_t twinSendGetDataTaskHandle;
 const char *thingId = "org.eclipse.ditto:datacentertwin";
 
 static uint8_t nodeId = 0;
-//Buffer para el tópico al que se suscribirá el nodo dependiendo de su número de nodo
+// Buffer para el tópico al que se suscribirá el nodo dependiendo de su número de nodo
 char *subsTopic[23];
-//Buffer para suscribirse al tópico de nodo en específico y recibir actualizaciones ota individuales
+// Buffer para suscribirse al tópico de nodo en específico y recibir actualizaciones ota individuales
 char *otaTopicSingle[17];
+// Buffer para suscribirse al tópico de nodo en específico y recibir reseteos individuales
+char *resetTopicSingle[19];
 
 // static const char* brokerUri = "mqtt://192.168.1.141:1883";
 static const char *otaTopic = "/datacenter/ota";
@@ -82,10 +84,11 @@ static const char *generalReportTopic = "/datacenter/generalReport";
 static const char *movementDetectedTopic = "/datacenter/movement";
 static const char *setThresholdTopic = "/datacenter/setThresh";
 static const char *setTimeoutTopic = "/datacenter/setTimeout";
-static const char *measureVibrOnTopic = "/datacenter/measureVibOn"; //Tópico que recibe la orden de medir las vibraciones. Si se miden, se envían las lecturas por mqtt, si no no.
+static const char *measureVibrOnTopic = "/datacenter/measureVibOn"; // Tópico que recibe la orden de medir las vibraciones. Si se miden, se envían las lecturas por mqtt, si no no.
 static const char *measureVibrOffTopic = "/datacenter/measureVibOff";
-static const char *vibMeasurementTopic = "/datacenter/vibMeasurement"; //Tópico al que se publican las medidas de vibracion, en caso de que estén activadas.
-static const char *accelPeriodTopic = "/datacenter/accelPeriod"; // Tópico para modificar el periodo del acelerómetro
+static const char *vibMeasurementTopic = "/datacenter/vibMeasurement"; // Tópico al que se publican las medidas de vibracion, en caso de que estén activadas.
+static const char *accelPeriodTopic = "/datacenter/accelPeriod";       // Tópico para modificar el periodo del acelerómetro
+static const char *resetTopic = "/datacenter/reset"; // Tópico para resetear todos los nodos
 
 static gpio_num_t i2c_gpio_sda = 10;
 static gpio_num_t i2c_gpio_scl = 8;
@@ -125,8 +128,12 @@ static uint16_t vibThres;
 // Este es el tiempo que debería transcurrir entre vibraciones de la máquina de frio (m).
 static uint16_t vibTime;
 // Esta variable sirve para activar o desactivar el envío por mqtt de los datos de vibración.
+#ifdef CONFIG_EXAMPLE_MONITOR_VIB
+static bool sendVibrOnOff = true;
+#else
 static bool sendVibrOnOff = false;
-// Llaves para la nvs 
+#endif
+// Llaves para la nvs
 char *vibTimeKey = "vibTime";
 char *vibThresKey = "vibThres";
 
@@ -236,9 +243,12 @@ void accelAlarmTask(void *pvParameters)
 
         // Las medidas se toman en valor absoluto ya que, como se va a calcular la media, el resultado de esta podría ser próximo a 0 si
         // se están tomando medidas consecutivamente positivas y negativas: media(700, -700, 700, -700) = 0
-        if (accelDataX < 0) accelDataX = -1 * accelDataX;
-        if (accelDataY < 0) accelDataY = -1 * accelDataY;
-        if (accelDataZ < 0) accelDataZ = -1 * accelDataZ;
+        if (accelDataX < 0)
+            accelDataX = -1 * accelDataX;
+        if (accelDataY < 0)
+            accelDataY = -1 * accelDataY;
+        if (accelDataZ < 0)
+            accelDataZ = -1 * accelDataZ;
 
         // Si alguna de las medidas tomadas varía un determinado umbral con respecto a la media anterior, se ha detectado movimiento.
         if (accelDataX > avgAccelDataX + vibThres || accelDataX < avgAccelDataX - vibThres || accelDataY > avgAccelDataY + vibThres || accelDataY < avgAccelDataY - vibThres || accelDataZ > avgAccelDataZ + vibThres || accelDataZ < avgAccelDataZ - vibThres)
@@ -302,9 +312,12 @@ void accelAlarmTask(void *pvParameters)
             ESP_ERROR_CHECK(icm42670_read_raw_data(&device, accelzReg, &accelDataZ));
 
             // Valores absolutos
-            if (accelDataX < 0) accelDataX = -1 * accelDataX;
-            if (accelDataY < 0) accelDataY = -1 * accelDataY;
-            if (accelDataZ < 0) accelDataZ = -1 * accelDataZ;
+            if (accelDataX < 0)
+                accelDataX = -1 * accelDataX;
+            if (accelDataY < 0)
+                accelDataY = -1 * accelDataY;
+            if (accelDataZ < 0)
+                accelDataZ = -1 * accelDataZ;
 
             avgAccelDataX = avgAccelDataX + accelDataX;
             avgAccelDataY = avgAccelDataY + accelDataY;
@@ -317,34 +330,13 @@ void accelAlarmTask(void *pvParameters)
         avgAccelDataY = avgAccelDataY / 4;
         avgAccelDataZ = avgAccelDataZ / 4;
 
-        //Si el envío del valor de las vibraciones está activado se envían las mediciones
-        if(sendVibrOnOff == true){
-
-            cJSON *root = cJSON_CreateObject();
-
-            cJSON_AddStringToObject(root, "thingId", thingId);
-            cJSON_AddStringToObject(root, "type", type);
-            cJSON_AddNumberToObject(root, "node", nodeId);
-            cJSON_AddNumberToObject(root, "xVal", accelDataX);
-            cJSON_AddNumberToObject(root, "yVal", accelDataY);
-            cJSON_AddNumberToObject(root, "zVal", accelDataZ);
-            cJSON_AddNumberToObject(root, "xAvg", avgAccelDataX);
-            cJSON_AddNumberToObject(root, "yAvg", avgAccelDataY);
-            cJSON_AddNumberToObject(root, "zAvg", avgAccelDataZ);
-
-            const char *buf = cJSON_Print(root);
-            cJSON_Delete(root);
-            esp_mqtt_client_publish(client, vibMeasurementTopic, buf, 0, 0, 0);
-            free(buf);
-
-        }
-
         vTaskDelay(pdMS_TO_TICKS(ACCEL_PERIOD));
     }
 }
 
 // Esta tarea únicamente mide y envía los datos de vibración
-void monitorVibTask(void * pvParameters){
+void monitorVibTask(void *pvParameters)
+{
 
     printf("tarea de monitorizacion\n");
 
@@ -370,7 +362,8 @@ void monitorVibTask(void * pvParameters){
 
     const char *type = "airConditionateMeasurement";
 
-    while(1){
+    while (1)
+    {
 
         ESP_ERROR_CHECK(icm42670_read_raw_data(&device, accelxReg, &accelDataX));
         ESP_ERROR_CHECK(icm42670_read_raw_data(&device, accelyReg, &accelDataY));
@@ -378,12 +371,16 @@ void monitorVibTask(void * pvParameters){
 
         // Las medidas se toman en valor absoluto ya que, como se va a calcular la media, el resultado de esta podría ser próximo a 0 si
         // se están tomando medidas consecutivamente positivas y negativas: media(700, -700, 700, -700) = 0
-        if (accelDataX < 0) accelDataX = -1 * accelDataX;
-        if (accelDataY < 0) accelDataY = -1 * accelDataY;
-        if (accelDataZ < 0) accelDataZ = -1 * accelDataZ;
+        if (accelDataX < 0)
+            accelDataX = -1 * accelDataX;
+        if (accelDataY < 0)
+            accelDataY = -1 * accelDataY;
+        if (accelDataZ < 0)
+            accelDataZ = -1 * accelDataZ;
 
-        //Si el envío del valor de las vibraciones está activado se envían las mediciones
-        if(sendVibrOnOff == true){
+        // Si el envío del valor de las vibraciones está activado se envían las mediciones
+        if (sendVibrOnOff == true)
+        {
 
             cJSON *root = cJSON_CreateObject();
 
@@ -398,12 +395,10 @@ void monitorVibTask(void * pvParameters){
             cJSON_Delete(root);
             esp_mqtt_client_publish(client, vibMeasurementTopic, buf, 0, 0, 0);
             free(buf);
-
         }
 
         vTaskDelay(pdMS_TO_TICKS(accelPeriod));
     }
-
 }
 
 // This task colects the data from sensors and insert them into a queue
@@ -623,7 +618,8 @@ static void ota_task_fcn(void)
                         ESP_LOGI(TAG, "Last invalid firmware version: %s", invalid_app_info.version);
                     }
 
-                    if(atoi(new_app_info.version) < atoi(running_app_info.version)){
+                    if (atoi(new_app_info.version) < atoi(running_app_info.version))
+                    {
                         ESP_LOGW(TAG, "La versión nueva es anterior a la actual. Reseteando...");
                         esp_restart();
                     }
@@ -754,24 +750,51 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
     {
     case MQTT_EVENT_CONNECTED:
         ESP_LOGI(TAG, "MQTT_EVENT_CONNECTED");
+
+        esp_partition_t *running = esp_ota_get_running_partition();
+        esp_ota_img_states_t ota_state3;
+        if (esp_ota_get_state_partition(running, &ota_state3) == ESP_OK)
+        {
+            if (ota_state3 == ESP_OTA_IMG_PENDING_VERIFY)
+            {
+                ESP_LOGE(TAG, "Diagnostics failed! Start rollback to the previous version ...");
+                esp_ota_mark_app_invalid_rollback_and_reboot();
+            }
+        }
+
         sprintf(subsTopic, "/datacenter/node/%d/#", nodeId);
         sprintf(otaTopicSingle, "/datacenter/ota/%d", nodeId);
+        sprintf(resetTopicSingle, "/datacenter/reset/%d", nodeId);
         esp_mqtt_client_subscribe(client, subsTopic, 2);
         esp_mqtt_client_subscribe(client, otaTopicSingle, 2);
-        esp_mqtt_client_subscribe(client, "/datacenter/ota", 2);
+        esp_mqtt_client_subscribe(client, otaTopic, 2);
         esp_mqtt_client_subscribe(client, generalReportTopic, 2);
+        esp_mqtt_client_subscribe(client, resetTopic, 2);
         if (nodeId == 9)
         {
             esp_mqtt_client_subscribe(client, setThresholdTopic, 2);
             esp_mqtt_client_subscribe(client, setTimeoutTopic, 2);
+#ifdef CONFIG_EXAMPLE_MONITOR_VIB
             esp_mqtt_client_subscribe(client, measureVibrOnTopic, 2);
             esp_mqtt_client_subscribe(client, measureVibrOffTopic, 2);
             esp_mqtt_client_subscribe(client, accelPeriodTopic, 2);
+#endif
         }
 
         break;
     case MQTT_EVENT_DISCONNECTED:
         ESP_LOGI(TAG, "MQTT_EVENT_DISCONNECTED");
+
+        esp_partition_t *onRun = esp_ota_get_running_partition();
+        esp_ota_img_states_t ota_state2;
+        if (esp_ota_get_state_partition(onRun, &ota_state2) == ESP_OK)
+        {
+            if (ota_state2 == ESP_OTA_IMG_PENDING_VERIFY)
+            {
+
+            }
+        }
+
         ESP_LOGI(TAG, "Performing reboot due to broker disconnection");
         // Se realiza un reseteo si no se puede conectar con el broker
         esp_restart();
@@ -818,11 +841,17 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
                 ESP_LOGI(TAG, "New image url: %s\n", otaParams.url);
                 if (nodeId == 9)
                 {
+#ifndef CONFIG_EXAMPLE_MONITOR_VIB
                     vTaskSuspend(accelAlarmTaskHandle);
+#endif
+#ifdef CONFIG_EXAMPLE_MONITOR_VIB
                     vTaskSuspend(monitorVibTaskHandle);
+#endif
                 }
+#ifndef CONFIG_EXAMPLE_MONITOR_VIB
                 vTaskSuspend(twinGetDataTaskHandle);
                 vTaskSuspend(twinSendGetDataTaskHandle);
+#endif
 
                 ota_task_fcn();
             }
@@ -841,7 +870,7 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
             type[5] = '\0';
 
             // Se obtiene la versión del firmware corriendo actualmente
-            const esp_partition_t *running = esp_ota_get_running_partition();
+            esp_partition_t *running = esp_ota_get_running_partition();
             esp_app_desc_t running_app_info;
             if (esp_ota_get_partition_description(running, &running_app_info) == ESP_OK)
             {
@@ -877,10 +906,10 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
         {
             ESP_LOGI(TAG, "Modificando valor del umbral de vibración. Umbral anterior: %d Umbral nuevo: %.*s", vibThres, event->data_len, event->data);
             vibThres = 0;
-            char num [5];
+            char num[5];
             sprintf(num, "%.*s", event->data_len, event->data);
             vibThres = atoi(num);
-            //printf("%u\n", vibThres);
+            // printf("%u\n", vibThres);
             ESP_LOGI(TAG, "Opening nvs...\n");
             ESP_ERROR_CHECK(nvs_open("nodeIdSpace", NVS_READWRITE, &nvsHandle));
             nvs_set_u16(nvsHandle, vibThresKey, vibThres);
@@ -892,33 +921,46 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
         {
             ESP_LOGI(TAG, "Modificando valor del tiempo de vibración. Tiempo anterior: %d Umbral nuevo: %.*s", vibTime, event->data_len, event->data);
             vibTime = 0;
-            char num [5];
-            sprintf(num, "%.*s", event->data_len, event->data);
+            char num[5];
+            sprintf(num, "%.*s", event->data_len, event->data); 
             vibTime = atoi(num);
-            //printf("%u\n", vibTime);
+            // printf("%u\n", vibTime);
             ESP_LOGI(TAG, "Opening nvs...\n");
             ESP_ERROR_CHECK(nvs_open("nodeIdSpace", NVS_READWRITE, &nvsHandle));
             nvs_set_u16(nvsHandle, vibTimeKey, vibTime);
             ESP_LOGI(TAG, "vibTime set in nvs");
             nvs_close(nvsHandle);
         }
-        else if (strncmp(event->topic, measureVibrOnTopic, 24) == 0){
+        // Orden para activar el envío de datos de vibración (solo nodo 9 en modo monitor)
+        else if (strncmp(event->topic, measureVibrOnTopic, 24) == 0)
+        {
 
             ESP_LOGI(TAG, "Envío de datos de vibración ON");
             sendVibrOnOff = true;
-
         }
-        else if (strncmp(event->topic, measureVibrOffTopic, 25) == 0){
+        // Orden para desactivar el envío de datos de vibración (solo nodo 9 en modo monitor)
+        else if (strncmp(event->topic, measureVibrOffTopic, 25) == 0)
+        {
 
             ESP_LOGI(TAG, "Envío de datos de vibración OFF");
             sendVibrOnOff = false;
-
         }
-        else if (strncmp(event->topic, accelPeriodTopic, 23) == 0){
+        // Orden para modificar el tiempo de muestreo de las vibraciones (solo nodo 9 en modo monitor) 
+        else if (strncmp(event->topic, accelPeriodTopic, 23) == 0)
+        {
             ESP_LOGI(TAG, "Modificación del periodo de muestreo de las vibraciones");
-            char num [5];
+            char num[5];
             sprintf(num, "%.*s", event->data_len, event->data);
             accelPeriod = atoi(num);
+        }
+        // Orden para resetear el nodo. Reseteo general e indivitual
+        else if (strncmp(event->topic, resetTopic, 17) == 0){
+            ESP_LOGI(TAG, "Reseteo general. Reseteando ...");
+            esp_restart();
+        }
+        else if(strncmp(event->topic, resetTopicSingle, 19) == 0){
+            ESP_LOGI(TAG, "Reseteo individual. Reseteando ...");
+            esp_restart();
         }
         break;
 
@@ -984,12 +1026,19 @@ static void mqtt_app_start(void)
     esp_mqtt_client_start(client);
 
     // Se crean las tareas que requieren la instancia del cliente mqtt (pasada como parámetro).
+#ifndef CONFIG_EXAMPLE_MONITOR_VIB
     xTaskCreate(twinSendGetDataTask, "twinSendDataTask", 4096, &client, 3, &twinSendGetDataTaskHandle);
+#endif
     if (nodeId == 9)
     {
-        //xTaskCreate(accelAlarmTask, "accelAlarmTask", 4096, &client, 4, &accelAlarmTaskHandle);
+#ifndef CONFIG_EXAMPLE_MONITOR_VIB
+        xTaskCreate(accelAlarmTask, "accelAlarmTask", 4096, &client, 4, &accelAlarmTaskHandle);
+#endif
+#ifdef CONFIG_EXAMPLE_MONITOR_VIB
         xTaskCreate(monitorVibTask, "monitorVibTask", 4096, &client, 4, &monitorVibTaskHandle);
+#endif
     }
+    printf("FIN FUNCION MQTT\n");
 }
 
 static bool diagnostic(void)
@@ -1003,20 +1052,27 @@ static bool diagnostic(void)
     if (errorCheck != ESP_OK)
         return false;
 
+    // Se comprueba el funcionamiento del bus I2C
+    errorCheck = i2cdev_init();
+    if (errorCheck != ESP_OK)
+        return false;
+
     // Se comprueba el funcionamiento de la nvs:
     errorCheck = nvs_flash_init();
     if (errorCheck != ESP_OK)
         return false;
 
-    // Se comprueba el funcionamiento del módulo wifi:
+    // Se comprueba el funcionamiento del módulo wifi, conexión al AP:
     errorCheck = esp_netif_init();
     if (errorCheck != ESP_OK)
         return false;
-
-    // Se comprueba el funcionamiento del bus I2C
-    errorCheck = i2cdev_init();
+    errorCheck = esp_netif_init();
     if (errorCheck != ESP_OK)
         return false;
+    errorCheck = esp_event_loop_create_default();
+    if (errorCheck != ESP_OK)
+        return false;
+    errorCheck = example_connect();
 
     return true;
 }
@@ -1057,6 +1113,9 @@ void app_main(void)
     const esp_partition_t *running = esp_ota_get_running_partition();
     esp_ota_img_states_t ota_state;
     // Esta función comprueba si la partición que está corriendo es una partición OTA
+    // La verificación se verifica en dos pasos, una con la función "diasnoctic" y otra
+    // cuando se conecta al broker correctamente. La verifiación se completa con la conexión
+    // del broker. Esto se hace de esta manera porque la conexión al broker es asíncrona0 
     if (esp_ota_get_state_partition(running, &ota_state) == ESP_OK)
     {
         if (ota_state == ESP_OTA_IMG_PENDING_VERIFY)
@@ -1065,8 +1124,9 @@ void app_main(void)
             bool diagnostic_is_ok = diagnostic();
             if (diagnostic_is_ok)
             {
-                ESP_LOGI(TAG, "Diagnostics completed successfully! Continuing execution ...");
-                esp_ota_mark_app_valid_cancel_rollback();
+                ESP_LOGI(TAG, "First check completed successfully! Waiting for MQTT check ...");
+                // ESP_LOGI(TAG, "Diagnostics completed successfully! Continuing execution ...");
+                // esp_ota_mark_app_valid_cancel_rollback();
             }
             else
             {
@@ -1151,7 +1211,10 @@ void app_main(void)
     esp_wifi_set_ps(WIFI_PS_NONE);
 #endif // CONFIG_EXAMPLE_CONNECT_WIFI
 
+#ifndef CONFIG_EXAMPLE_MONITOR_VIB
     xTaskCreate(twinGetDataTask, "twinGetDataTask", 4096, NULL, 3, &twinGetDataTaskHandle);
+#endif
 
     mqtt_app_start();
+    printf("SALIÓ DE FUNCION DE MQTT\n");
 }

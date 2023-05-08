@@ -1,0 +1,22 @@
+{
+    "project_name":       "bootloader",
+    "project_path":       "/home/sergio/esp/esp-idf/components/bootloader/subproject",
+    "build_dir":          "/home/sergio/Escritorio/master/TFM/git/datacenter/codigo_nodos_ota_rollback/build/bootloader",
+    "config_file":        "/home/sergio/Escritorio/master/TFM/git/datacenter/codigo_nodos_ota_rollback/sdkconfig",
+    "config_defaults":    "",
+    "app_elf":            "bootloader.elf",
+    "app_bin":            "bootloader.bin",
+    "git_revision":       "v5.0-dirty",
+    "target":             "esp32c3",
+    "rev":                "",
+    "phy_data_partition": "",
+    "monitor_baud" :      "115200",
+    "monitor_toolprefix": "riscv32-esp-elf-",
+    "config_environment" : {
+        "COMPONENT_KCONFIGS" : "/home/sergio/esp/esp-idf/components/efuse/Kconfig;/home/sergio/esp/esp-idf/components/esp_common/Kconfig;/home/sergio/esp/esp-idf/components/esp_hw_support/Kconfig;/home/sergio/esp/esp-idf/components/esp_system/Kconfig;/home/sergio/esp/esp-idf/components/freertos/Kconfig;/home/sergio/esp/esp-idf/components/hal/Kconfig;/home/sergio/esp/esp-idf/components/log/Kconfig;/home/sergio/esp/esp-idf/components/newlib/Kconfig;/home/sergio/esp/esp-idf/components/spi_flash/Kconfig",
+        "COMPONENT_KCONFIGS_PROJBUILD" : "/home/sergio/esp/esp-idf/components/bootloader/Kconfig.projbuild;/home/sergio/esp/esp-idf/components/esp_app_format/Kconfig.projbuild;/home/sergio/esp/esp-idf/components/esp_rom/Kconfig.projbuild;/home/sergio/esp/esp-idf/components/esptool_py/Kconfig.projbuild;/home/sergio/esp/esp-idf/components/partition_table/Kconfig.projbuild"
+    },
+    "build_components" : [ "bootloader", "bootloader_support", "efuse", "esp_app_format", "esp_common", "esp_hw_support", "esp_rom", "esp_system", "esptool_py", "freertos", "hal", "log", "main", "micro-ecc", "newlib", "partition_table", "riscv", "soc", "spi_flash", "" ],
+    "build_component_paths" : [ "/home/sergio/esp/esp-idf/components/bootloader", "/home/sergio/esp/esp-idf/components/bootloader_support", "/home/sergio/esp/esp-idf/components/efuse", "/home/sergio/esp/esp-idf/components/esp_app_format", "/home/sergio/esp/esp-idf/components/esp_common", "/home/sergio/esp/esp-idf/components/esp_hw_support", "/home/sergio/esp/esp-idf/components/esp_rom", "/home/sergio/esp/esp-idf/components/esp_system", "/home/sergio/esp/esp-idf/components/esptool_py", "/home/sergio/esp/esp-idf/components/freertos", "/home/sergio/esp/esp-idf/components/hal", "/home/sergio/esp/esp-idf/components/log", "/home/sergio/esp/esp-idf/components/bootloader/subproject/main", "/home/sergio/esp/esp-idf/components/bootloader/subproject/components/micro-ecc", "/home/sergio/esp/esp-idf/components/newlib", "/home/sergio/esp/esp-idf/components/partition_table", "/home/sergio/esp/esp-idf/components/riscv", "/home/sergio/esp/esp-idf/components/soc", "/home/sergio/esp/esp-idf/components/spi_flash", "" ],
+    "debug_prefix_map_gdbinit": ""
+}

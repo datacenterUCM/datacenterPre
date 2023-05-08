@@ -46,7 +46,8 @@ class InfluxModule {
             xAvg: Influx.FieldType.FLOAT,
             yAvg: Influx.FieldType.FLOAT,
             zAvg: Influx.FieldType.FLOAT
-          }
+          },
+          tags:[]
         }
       ]
     });
