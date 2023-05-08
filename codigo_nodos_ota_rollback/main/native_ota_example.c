@@ -54,15 +54,16 @@ extern const uint8_t server_cert_pem_end[] asm("_binary_ca_cert_pem_end");
 #define TEMP_HUM_PERIOD 10000 /*Periodo de muestreo de la temperatura y humedad*/
 #define GYRO_PERIOD 20        /*Periodo de muestreo del giroscopio*/
 #define ACCEL_PERIOD 10       /*Periodo de muestreo del acelerómetro*/
+static uint16_t accelPeriod = 10;
 
 #define GPIO_BUILTIN_LED 7
 #define GPIO_PIN_SEL 1ULL << GPIO_BUILTIN_LED
 
 TaskHandle_t gyroAlarmTaskHandle;
 TaskHandle_t accelAlarmTaskHandle;
+TaskHandle_t monitorVibTaskHandle;
 TaskHandle_t twinGetDataTaskHandle;
 TaskHandle_t twinSendGetDataTaskHandle;
-TaskHandle_t otaTaskHandle;
 
 // Identificador del "thing" en eclipse ditto
 const char *thingId = "org.eclipse.ditto:datacentertwin";
@@ -84,6 +85,7 @@ static const char *setTimeoutTopic = "/datacenter/setTimeout";
 static const char *measureVibrOnTopic = "/datacenter/measureVibOn"; //Tópico que recibe la orden de medir las vibraciones. Si se miden, se envían las lecturas por mqtt, si no no.
 static const char *measureVibrOffTopic = "/datacenter/measureVibOff";
 static const char *vibMeasurementTopic = "/datacenter/vibMeasurement"; //Tópico al que se publican las medidas de vibracion, en caso de que estén activadas.
+static const char *accelPeriodTopic = "/datacenter/accelPeriod"; // Tópico para modificar el periodo del acelerómetro
 
 static gpio_num_t i2c_gpio_sda = 10;
 static gpio_num_t i2c_gpio_scl = 8;
@@ -261,6 +263,7 @@ void accelAlarmTask(void *pvParameters)
             const char *buf = cJSON_Print(root);
             cJSON_Delete(root);
             esp_mqtt_client_publish(client, movementDetectedTopic, buf, 0, 0, 0);
+            free(buf);
 
             airConditioningOk = true;
             vTaskDelay(1000 / portTICK_PERIOD_MS);
@@ -287,6 +290,7 @@ void accelAlarmTask(void *pvParameters)
             const char *buf = cJSON_Print(root);
             cJSON_Delete(root);
             esp_mqtt_client_publish(client, dittoTopic, buf, 0, 0, 0);
+            free(buf);
         }
 
         // Se calcula el valor medio de las medidas del acelerómetro en cada eje. En este caso se está haciendo la media de 4 medidas consecutivas.
@@ -331,11 +335,75 @@ void accelAlarmTask(void *pvParameters)
             const char *buf = cJSON_Print(root);
             cJSON_Delete(root);
             esp_mqtt_client_publish(client, vibMeasurementTopic, buf, 0, 0, 0);
+            free(buf);
 
         }
 
         vTaskDelay(pdMS_TO_TICKS(ACCEL_PERIOD));
     }
+}
+
+// Esta tarea únicamente mide y envía los datos de vibración
+void monitorVibTask(void * pvParameters){
+
+    printf("tarea de monitorizacion\n");
+
+    // Obtain the mqtt client
+    esp_mqtt_client_handle_t client = *((esp_mqtt_client_handle_t *)pvParameters);
+
+    // Init device descriptor and device
+    ESP_ERROR_CHECK(icm42670_init_desc(&device,
+                                       ICM42670_ADDR,
+                                       i2c_port,
+                                       i2c_gpio_sda,
+                                       i2c_gpio_scl));
+
+    ESP_ERROR_CHECK(icm42670_init(&device));
+
+    // enable accelerometer and gyro in low-noise (LN) mode
+    ESP_ERROR_CHECK(icm42670_set_accel_pwr_mode(&device, ICM42670_ACCEL_ENABLE_LN_MODE));
+
+    // Variables para almacenar los valores instantáneos del acelerómetro y para almacenar su media en cada eje:
+    int16_t accelDataX;
+    int16_t accelDataY;
+    int16_t accelDataZ;
+
+    const char *type = "airConditionateMeasurement";
+
+    while(1){
+
+        ESP_ERROR_CHECK(icm42670_read_raw_data(&device, accelxReg, &accelDataX));
+        ESP_ERROR_CHECK(icm42670_read_raw_data(&device, accelyReg, &accelDataY));
+        ESP_ERROR_CHECK(icm42670_read_raw_data(&device, accelzReg, &accelDataZ));
+
+        // Las medidas se toman en valor absoluto ya que, como se va a calcular la media, el resultado de esta podría ser próximo a 0 si
+        // se están tomando medidas consecutivamente positivas y negativas: media(700, -700, 700, -700) = 0
+        if (accelDataX < 0) accelDataX = -1 * accelDataX;
+        if (accelDataY < 0) accelDataY = -1 * accelDataY;
+        if (accelDataZ < 0) accelDataZ = -1 * accelDataZ;
+
+        //Si el envío del valor de las vibraciones está activado se envían las mediciones
+        if(sendVibrOnOff == true){
+
+            cJSON *root = cJSON_CreateObject();
+
+            cJSON_AddStringToObject(root, "thingId", thingId);
+            cJSON_AddStringToObject(root, "type", type);
+            cJSON_AddNumberToObject(root, "node", nodeId);
+            cJSON_AddNumberToObject(root, "xVal", accelDataX);
+            cJSON_AddNumberToObject(root, "yVal", accelDataY);
+            cJSON_AddNumberToObject(root, "zVal", accelDataZ);
+
+            const char *buf = cJSON_Print(root);
+            cJSON_Delete(root);
+            esp_mqtt_client_publish(client, vibMeasurementTopic, buf, 0, 0, 0);
+            free(buf);
+
+        }
+
+        vTaskDelay(pdMS_TO_TICKS(accelPeriod));
+    }
+
 }
 
 // This task colects the data from sensors and insert them into a queue
@@ -402,8 +470,8 @@ void twinSendGetDataTask(void *pvParameters)
             cJSON_AddNumberToObject(root, "hum", (double)twinData.rh);
             const char *buf = cJSON_Print(root);
             cJSON_Delete(root);
-
             esp_mqtt_client_publish(client, dittoTopic, buf, 0, 0, 0);
+            free(buf);
         }
     }
 }
@@ -698,6 +766,7 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
             esp_mqtt_client_subscribe(client, setTimeoutTopic, 2);
             esp_mqtt_client_subscribe(client, measureVibrOnTopic, 2);
             esp_mqtt_client_subscribe(client, measureVibrOffTopic, 2);
+            esp_mqtt_client_subscribe(client, accelPeriodTopic, 2);
         }
 
         break;
@@ -750,13 +819,12 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
                 if (nodeId == 9)
                 {
                     vTaskSuspend(accelAlarmTaskHandle);
+                    vTaskSuspend(monitorVibTaskHandle);
                 }
                 vTaskSuspend(twinGetDataTaskHandle);
                 vTaskSuspend(twinSendGetDataTaskHandle);
 
-                // xTaskCreate(&ota_task, "ota_task", 8192, NULL, 4, &otaTaskHandle);
                 ota_task_fcn();
-                // xTaskCreate(&ensiemplo, "ensiemplo", 8192, NULL, 5, NULL);
             }
             else
             {
@@ -801,6 +869,7 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
             esp_mqtt_client_publish(client, alarmModuleTopic, buf, 0, 0, 0);
 
             cJSON_Delete(root);
+            free(buf);
             // lastMeasurements.temp
         }
         // Orden para cambiar el umbral a partir del cual se detecta vibración
@@ -844,6 +913,12 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
             ESP_LOGI(TAG, "Envío de datos de vibración OFF");
             sendVibrOnOff = false;
 
+        }
+        else if (strncmp(event->topic, accelPeriodTopic, 23) == 0){
+            ESP_LOGI(TAG, "Modificación del periodo de muestreo de las vibraciones");
+            char num [5];
+            sprintf(num, "%.*s", event->data_len, event->data);
+            accelPeriod = atoi(num);
         }
         break;
 
@@ -910,10 +985,10 @@ static void mqtt_app_start(void)
 
     // Se crean las tareas que requieren la instancia del cliente mqtt (pasada como parámetro).
     xTaskCreate(twinSendGetDataTask, "twinSendDataTask", 4096, &client, 3, &twinSendGetDataTaskHandle);
-    // xTaskCreate(gyroAlarmTask, "gyroAlarmTask", 4096, &client, 4, &gyroAlarmTaskHandle);
     if (nodeId == 9)
     {
-        xTaskCreate(accelAlarmTask, "accelAlarmTask", 4096, &client, 4, &accelAlarmTaskHandle);
+        //xTaskCreate(accelAlarmTask, "accelAlarmTask", 4096, &client, 4, &accelAlarmTaskHandle);
+        xTaskCreate(monitorVibTask, "monitorVibTask", 4096, &client, 4, &monitorVibTaskHandle);
     }
 }
 
@@ -1076,7 +1151,6 @@ void app_main(void)
     esp_wifi_set_ps(WIFI_PS_NONE);
 #endif // CONFIG_EXAMPLE_CONNECT_WIFI
 
-    // xTaskCreate(&ota_task, "ota_task", 8192, NULL, 5, NULL);
     xTaskCreate(twinGetDataTask, "twinGetDataTask", 4096, NULL, 3, &twinGetDataTaskHandle);
 
     mqtt_app_start();
