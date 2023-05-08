@@ -504,10 +504,6 @@ static void infinite_loop(void)
 
 static void ota_task_fcn(void)
 {
-    // while(1){
-    printf("tis\n");
-    //    vTaskDelay(1000/portTICK_PERIOD_MS);
-    //}
     esp_err_t err;
     // update handle : set by esp_ota_begin(), must be freed via esp_ota_end()
     esp_ota_handle_t update_handle = 0;
@@ -578,12 +574,6 @@ static void ota_task_fcn(void)
     int binary_file_length = 0;
     // deal with all receive packet
     bool image_header_was_checked = false;
-
-    /*while (1)
-        {
-            printf("tis\n");
-            vTaskDelay(1000 / portTICK_PERIOD_MS);
-        }*/
 
     while (1)
     {
@@ -730,6 +720,48 @@ static void ota_task_fcn(void)
     return;
 }
 
+// Esta función se ejecuta para comprobar la conexión con el servidor https
+bool check_https_connection()
+{
+    printf("sape\n");
+    int len = strlen("test.txt");
+    int urlLen = sizeof(CONFIG_EXAMPLE_FIRMWARE_UPG_URL);
+    int bufSize = len + urlLen - 1;
+    printf("sapito\n");
+    const char *partialUrl = CONFIG_EXAMPLE_FIRMWARE_UPG_URL;
+    char newImageUrl[50];
+    strcpy(newImageUrl, partialUrl);
+    printf("sapeeeeeeee\n");
+    strncat(newImageUrl, "test.txt", bufSize);  
+    newImageUrl[bufSize + 1] = '\0';
+    printf("url: %s\n", newImageUrl);
+
+    esp_http_client_config_t config = {
+        .url = newImageUrl,
+        .cert_pem = (char *)server_cert_pem_start,
+        .timeout_ms = CONFIG_EXAMPLE_OTA_RECV_TIMEOUT,
+        .keep_alive_enable = true,
+    };
+
+    esp_http_client_handle_t client = esp_http_client_init(&config);
+    if (client == NULL) {
+        ESP_LOGE(TAG, "Failed to initialise HTTP connection");
+        return false;
+    }
+    esp_err_t err = esp_http_client_open(client, 0);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to open HTTP connection: %s", esp_err_to_name(err));
+        esp_http_client_cleanup(client);
+        return false;
+    }
+    esp_http_client_fetch_headers(client);
+
+    esp_http_client_close(client);
+    esp_http_client_cleanup(client);
+
+    return true;
+}
+
 static void print_sha256(const uint8_t *image_hash, const char *label)
 {
     char hash_print[HASH_LEN * 2 + 1];
@@ -751,25 +783,16 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
     case MQTT_EVENT_CONNECTED:
         ESP_LOGI(TAG, "MQTT_EVENT_CONNECTED");
 
-        esp_partition_t *running = esp_ota_get_running_partition();
-        esp_ota_img_states_t ota_state3;
-        if (esp_ota_get_state_partition(running, &ota_state3) == ESP_OK)
-        {
-            if (ota_state3 == ESP_OTA_IMG_PENDING_VERIFY)
-            {
-                ESP_LOGE(TAG, "Diagnostics failed! Start rollback to the previous version ...");
-                esp_ota_mark_app_invalid_rollback_and_reboot();
-            }
-        }
-
         sprintf(subsTopic, "/datacenter/node/%d/#", nodeId);
         sprintf(otaTopicSingle, "/datacenter/ota/%d", nodeId);
         sprintf(resetTopicSingle, "/datacenter/reset/%d", nodeId);
+        printf("reset single topic: %s\n",resetTopicSingle);
         esp_mqtt_client_subscribe(client, subsTopic, 2);
         esp_mqtt_client_subscribe(client, otaTopicSingle, 2);
         esp_mqtt_client_subscribe(client, otaTopic, 2);
         esp_mqtt_client_subscribe(client, generalReportTopic, 2);
         esp_mqtt_client_subscribe(client, resetTopic, 2);
+        esp_mqtt_client_subscribe(client, resetTopicSingle, 2);
         if (nodeId == 9)
         {
             esp_mqtt_client_subscribe(client, setThresholdTopic, 2);
@@ -784,16 +807,6 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
         break;
     case MQTT_EVENT_DISCONNECTED:
         ESP_LOGI(TAG, "MQTT_EVENT_DISCONNECTED");
-
-        esp_partition_t *onRun = esp_ota_get_running_partition();
-        esp_ota_img_states_t ota_state2;
-        if (esp_ota_get_state_partition(onRun, &ota_state2) == ESP_OK)
-        {
-            if (ota_state2 == ESP_OTA_IMG_PENDING_VERIFY)
-            {
-
-            }
-        }
 
         ESP_LOGI(TAG, "Performing reboot due to broker disconnection");
         // Se realiza un reseteo si no se puede conectar con el broker
@@ -1038,7 +1051,6 @@ static void mqtt_app_start(void)
         xTaskCreate(monitorVibTask, "monitorVibTask", 4096, &client, 4, &monitorVibTaskHandle);
 #endif
     }
-    printf("FIN FUNCION MQTT\n");
 }
 
 static bool diagnostic(void)
@@ -1073,6 +1085,12 @@ static bool diagnostic(void)
     if (errorCheck != ESP_OK)
         return false;
     errorCheck = example_connect();
+    if (errorCheck != ESP_OK)
+        return false;
+    
+    bool httpsCheck = check_https_connection();
+    if (httpsCheck == false)
+        return false;
 
     return true;
 }
@@ -1113,9 +1131,6 @@ void app_main(void)
     const esp_partition_t *running = esp_ota_get_running_partition();
     esp_ota_img_states_t ota_state;
     // Esta función comprueba si la partición que está corriendo es una partición OTA
-    // La verificación se verifica en dos pasos, una con la función "diasnoctic" y otra
-    // cuando se conecta al broker correctamente. La verifiación se completa con la conexión
-    // del broker. Esto se hace de esta manera porque la conexión al broker es asíncrona0 
     if (esp_ota_get_state_partition(running, &ota_state) == ESP_OK)
     {
         if (ota_state == ESP_OTA_IMG_PENDING_VERIFY)
@@ -1124,9 +1139,9 @@ void app_main(void)
             bool diagnostic_is_ok = diagnostic();
             if (diagnostic_is_ok)
             {
-                ESP_LOGI(TAG, "First check completed successfully! Waiting for MQTT check ...");
-                // ESP_LOGI(TAG, "Diagnostics completed successfully! Continuing execution ...");
-                // esp_ota_mark_app_valid_cancel_rollback();
+                ESP_LOGI(TAG, "Diagnostics completed successfully! Marking valid and reboot ...");
+                esp_ota_mark_app_valid_cancel_rollback();
+                esp_restart();
             }
             else
             {
@@ -1216,5 +1231,4 @@ void app_main(void)
 #endif
 
     mqtt_app_start();
-    printf("SALIÓ DE FUNCION DE MQTT\n");
 }

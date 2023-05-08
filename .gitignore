@@ -1,3 +1,4 @@
 /ota_images/ca_cert.pem
 /ota_images/ca.key.pem
 /server_alarmas/node_modules/
+/codigo_nodos_ota_rollback/build/
