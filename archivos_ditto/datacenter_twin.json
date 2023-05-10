@@ -1,6 +1,5 @@
 {
-    "thingId": "org.eclipse.ditto:sergio-room-v1",
-    "policyId": "org.eclipse.ditto:sergio-room-v1",
+    "thingId": "org.eclipse.ditto:sergio-room-v2",
     "definition": "digitaltwin:DigitaltwinExample:1.0.0",
     "attributes": {
       "location": "sergio's room"
