@@ -15,7 +15,7 @@ class LogicImpl {
     checkMsg(message, topic) {
 
         const messageJson = JSON.parse(message);
-        console.log(this.configParams.TAG + " Mensaje recibido en el tópico " + topic);
+        //console.log(this.configParams.TAG + " Mensaje recibido en el tópico " + topic);
 
         const node = messageJson["node"];
 
@@ -34,7 +34,7 @@ class LogicImpl {
 
             this.influx.insert(influxData).then(() => {
                 const now = new Date();
-                console.log(`${this.configParams.TAG} ${now.toLocaleString()} Dato introducido\n`)
+                //console.log(`${this.configParams.TAG} ${now.toLocaleString()} Dato introducido\n`)
             });
         }
         // Se introduce el dato en el apartado de medidas de vibración
@@ -49,7 +49,7 @@ class LogicImpl {
 
             this.influx.insertIntoVibr(influxData).then(() => {
                 const now = new Date();
-                console.log(`${this.configParams.TAG} ${now.toLocaleString()} Dato introducido\n`);
+                //console.log(`${this.configParams.TAG} ${now.toLocaleString()} Dato introducido\n`);
             })
 
         }
