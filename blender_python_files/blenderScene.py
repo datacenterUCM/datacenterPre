@@ -140,14 +140,13 @@ class BlenderScene(Singleton):
     # Función que se ejecuta para refrescar los valores del mapa
     def updateScene(self, tempResults, humResults):
         # Se eliminan los valores nulos para calcular el maximo y el minimo de temperatura y humedad
+        print("tempResults:", tempResults)
         tempSinNan = [x for x in tempResults if not math.isnan(x)]
         humSinNan = [x for x in humResults if not math.isnan(x)]
 
         # Normalizar los valores de temperatura y humedad para que estén en el rango [0, 1]
         temp_norm = (tempResults - np.min(tempSinNan)) / (np.max(tempSinNan) - np.min(tempSinNan))
         hum_norm = (humResults - np.min(humSinNan)) / (np.max(humSinNan) - np.min(humSinNan))
-        print()
-        print("max temp:", np.min(tempResults))
 
         # Mapear los valores normalizados de temperatura y humedad a valores RGB utilizando la escala de colores
         # Dependiendo de qué medida esté seleccionada (temperatura o humedad) se crean los colores para una u otra

@@ -2,13 +2,13 @@ class ConfigParams():
 
     def __init__(self):
         
-        #self.dittoUrl = 'http://147.96.81.123:8080/api/2/things/org.eclipse.ditto:datacentertwin'
-        self.dittoUrl = 'http://localhost:8080/api/2/things/org.eclipse.ditto:sergio-room-v2'
+        self.dittoUrl = 'http://147.96.81.123:8080/api/2/things/org.eclipse.ditto:datacentertwin'
+        #self.dittoUrl = 'http://localhost:8080/api/2/things/org.eclipse.ditto:sergio-room-v2'
 
-        #self.ditoUsser = 'datacenter'
-        self.dittoUser = 'sergio'
-        #self.dittoPass = 'esp32twin'
-        self.dittoPass = 'sergiotfm'
+        self.dittoUser = 'datacenter'
+        #self.dittoUser = 'sergio'
+        self.dittoPass = 'esp32twin'
+        #self.dittoPass = 'sergiotfm'
 
         # Longitud de los lados de la sala
         self.sideXLength = 3 * 7.26
@@ -19,7 +19,6 @@ class ConfigParams():
 
         #Lista de objetos que se importarán del archivo que contiene la escena
         self.objectsToImport = ["SimpleChair", "maquinaDeFrio", "estanteriaPeque1", "estanteriaPeque2", "estanteriaGrande", "suelo", "pared1", "pared2", "pared3"]
-        #self.objectsToImport = ["SimpleChair"]
 
         self.blenderObjectsRoute = '/home/sergio/Escritorio/master/TFM/git/datacenter/blender_python_files/objectsDatacenter.blend'
         #self.blenderObjectsRoute = '/home/sergio/Escritorio/master/TFM/blender_files/objectsDatacenter.blend'

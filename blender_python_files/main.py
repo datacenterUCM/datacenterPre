@@ -11,7 +11,7 @@ def update():
     tempResults, humResults, planePoints = twin.getData()
     print("tempResults len", len(tempResults))
     blenderScene.updateScene(tempResults=tempResults, humResults=humResults)
-    return 5
+    return 10
 
 configParams = ConfigParams()
 
