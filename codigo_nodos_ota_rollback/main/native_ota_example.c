@@ -1210,7 +1210,7 @@ void app_main(void)
     /* This helper function configures Wi-Fi or Ethernet, as selected in menuconfig.
      * Read "Establishing Wi-Fi or Ethernet Connection" section in
      * examples/protocols/README.md for more information about this function.
-     */
+     */ 
     // Cuando se conecta al wifi se enciende el led para indicarlo
     ESP_ERROR_CHECK(example_connect());
     ESP_LOGI(TAG, "CONNECTED TO WIFI");

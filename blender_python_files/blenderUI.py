@@ -52,9 +52,9 @@ class ADDONAME_OT_ZValueOperator(bpy.types.Operator):
     preset_sliderZ : bpy.props.FloatProperty(
             name="Z value slider",
             description="Select a value",
-            default=1.5,
+            default=2.25,
             min=0.0,
-            max=3.0,
+            max=4.5,
             #update=instantUpdate
         )
     
@@ -72,7 +72,7 @@ class ADDONAME_OT_ZValueOperator(bpy.types.Operator):
         # Esta instancia que se crea de blenderScene comparte las variables de clase
         # con el resto de instancias de "BlenderScene".
         blenderScene = BlenderScene()
-        blenderScene.updateZ( self.preset_sliderZ )
+        blenderScene.updateZ( self.preset_sliderZ * 3 )
 
         return {'FINISHED'}    
  
@@ -81,11 +81,11 @@ class ADDONAME_OT_ResolutionOperator(bpy.types.Operator):
     bl_idname = "wm.resolution_operator"
 
     preset_sliderResolution : bpy.props.FloatProperty(
-            name="Resolution (points per side)",
+            name="Resolution (points per Y side)",
             description="Select a value",
-            default=20,
+            default=15,
             min=10,
-            max=45,
+            max=35,
             step=100,
             #update=instantUpdate
         )
@@ -105,7 +105,7 @@ class ADDONAME_OT_ResolutionOperator(bpy.types.Operator):
         blenderScene = BlenderScene()
 
         # Solo se modifica la resolución si se ha variado el slider
-        if BlenderScene.sidePoints != self.preset_sliderResolution:
+        if BlenderScene.sideYPoints != self.preset_sliderResolution:
             #Se borra la escena porque se ha modiicado la resolución
             blenderScene.deleteScene()
 
@@ -114,7 +114,7 @@ class ADDONAME_OT_ResolutionOperator(bpy.types.Operator):
             interpolator.setSidePoints( self.preset_sliderResolution )
 
             # Se vuelve a crear la escena
-            blenderScene.setSidePoints(sidePoints=self.preset_sliderResolution)
+            blenderScene.setSidePoints(sideYPoints=self.preset_sliderResolution)
             blenderScene.reCreateScene()
 
         return {'FINISHED'}  

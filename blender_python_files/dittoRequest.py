@@ -5,10 +5,11 @@ from interpolator import Interpolator
 from blenderScene import BlenderScene
 from blenderUI import UIRegister
 import time
+from configParams import ConfigParams
 
 class DittoRequest:
 
-    def __init__(self, url, auth, sideLength, sidePoints):
+    def __init__(self, url, auth, sideXLength, sideYLength, sideYPoints):
         self.logTag = "[MODULE dittoRequest]"
 
         self.url = url
@@ -19,11 +20,14 @@ class DittoRequest:
         # Se determina la longitud del lado de la sala y los puntos por cada lado
 
         self.interpolator = Interpolator()
-        self.interpolator.setClassVariables( sidePoints=sidePoints, sideLength=sideLength, xBoundary=(0,3), yBoundary=(0,3), zBoundary=(0,3) )
+        self.interpolator.setClassVariables( sideYPoints=sideYPoints, sideXLength=sideXLength, sideYLength=sideYLength, xBoundary=(0,3), yBoundary=(0,3), zBoundary=(0,3) )
 
-        self.zValue = 1.5 # Valor para la Z del mapa de calor
+        self.configParams = ConfigParams()
 
-        self.sideLength = sideLength
+        self.zValue =  self.configParams.defaultZValue * 3  # Valor para la Z inicial del mapa de calor
+
+        self.sideXLength = sideXLength
+        self.sideYLength = sideYLength
 
 
     def fetchData(self):
@@ -68,6 +72,11 @@ class DittoRequest:
 
         #Se obtienen los valores de la temperatura y humedad y las localizaciones de cada nodo de la sala
         values, points = self.formatData()
+        print("points antes:", points)
+        
+        points = list( map( lambda point: [point[0] * 3, point[1] * 3, point[2] * 3], points ) )
+            
+        print("points después", points)
         
         #################################################
         # INTERPOLATE DATA
