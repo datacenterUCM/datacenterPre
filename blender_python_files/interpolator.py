@@ -1,7 +1,9 @@
 import numpy as np
 from scipy.interpolate import griddata
 from scipy.interpolate import LinearNDInterpolator
+from scipy.interpolate import RectBivariateSpline
 from configParams import ConfigParams
+from scipy.spatial.distance import cdist
 
 class Interpolator:
     configParams = ConfigParams()
@@ -43,16 +45,15 @@ class Interpolator:
         print("values:", values)
         print("points:", points)
 
-        points = np.array(points)
-        values = np.array(values)
-        request = np.array(request)
-
         linInter= LinearNDInterpolator(points, values)
         interpolatedPoints = linInter(request)
-        print(interpolatedPoints)
+        print("interpolatedPoints:", interpolatedPoints)
 
         return interpolatedPoints
 
+
+    #def interpolatePointsAbove(self, points, values, request):
+        #interpolador = RectBivariateSpline(,)
 
     # Función para interpolar un plano. values contiene los valores de temperatura y humedad medidos por cada nodo,
     # points contiene las localizaciones de los sensores, zVal contiene el valor de la coordenada z para la cual se 
@@ -60,27 +61,29 @@ class Interpolator:
     # si numPoints=3, se calcularán 3*3=9 puntos) 
     def interpolatePlane(self, points, values, zVal):
 
-        # Crear dos vectores de coordenadas X e Y
-        # np.linspace crea un array de puntos equidistantes dado un inicio, un fin y un número de puntos
+        # Se determinan las posiciones de x e y que contendrán el último punto del grid (para que el mapa de calor no se salga 
+        # de los límites de las paredes)
         Interpolator.xLastPoint = ( Interpolator.sideXLength / (int(Interpolator.sideXPoints) + 1) ) * (int(Interpolator.sideXPoints))
         Interpolator.yLastPoint = ( Interpolator.sideYLength / (int(Interpolator.sideYPoints) + 1) ) * (int(Interpolator.sideYPoints))
-        print("last x point: ", Interpolator.xLastPoint)
+
+        # Crear dos vectores de coordenadas X e Y
+        # np.linspace crea un array de puntos equidistantes dado un inicio, un fin y un número de puntos
         x = np.linspace(start = 0, stop = Interpolator.xLastPoint, num = int(Interpolator.sideXPoints) )
         y = np.linspace(start = 0, stop = Interpolator.yLastPoint, num = int(Interpolator.sideYPoints) )
         
-        print("xlen", len(x))
-        print("ylen", len(y))
 
         # Crear el grid 2D con meshgrid y apilar filas con vstack
         grid = np.vstack(np.meshgrid(x, y)).reshape(2, -1).T.tolist()
 
-        print("numero de puntos:", len(grid))
-
         #Se agrega la dimensión z al grid
         list ( map( lambda e : e.append( zVal ) ,grid ) ) 
 
-
-        #Se obtienen las interpolaciones de todos los puntos
+        # Se obtienen las interpolaciones de todos los puntos
+        # Si el valor de Z para el que se quieren calcular las temperaturas es mayor que la mayor altura de los nodos
+        # no es calculable en un principio, por eso se usa "interpolatePointsAbove" que hace una interpolación distinta
+        #if zVal > Interpolator.configParams.maxZValue:
+        #    resultValues = self.interpolatePointsAbove(points, values, grid)
+        #else:
         resultValues = self.interpolatePoints( points, values,  grid)
 
         return resultValues, grid

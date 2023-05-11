@@ -68,7 +68,6 @@ class UIRegister():
     def register(self):
         print("registrando")
         for cls in classes:
-            print("iteracion")
             bpy.utils.register_class(cls)
         bpy.types.Scene.custom_props = bpy.props.PointerProperty(type=CustomProps)
 

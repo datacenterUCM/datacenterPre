@@ -29,3 +29,7 @@ class ConfigParams():
         self.twinYLength = 2.74
         self.twinXLength = 4.5
 
+        # Valor máximo de Z la localización de los nodos. Los puntos por encima de este valor de Z no son a priori calculables
+        # por lo que se usa el interpolador de manera distinta. Se puede ver en la función "interpolatePlane"
+        self.maxZValue = 6.26
+

@@ -9,7 +9,6 @@ from configParams import ConfigParams
 
 def update():
     tempResults, humResults, planePoints = twin.getData()
-    print("tempResults len", len(tempResults))
     blenderScene.updateScene(tempResults=tempResults, humResults=humResults)
     return 10
 
@@ -23,7 +22,6 @@ twin = DittoRequest(configParams.dittoUrl, (configParams.dittoUser, configParams
 faceSideLength = configParams.sideYLength / (configParams.sideYPoints - 1)
 
 tempResults, humResults, planePoints = twin.getData()
-print("tempResults len", len(tempResults))
 
 #################################################
 # BLENDER PLOT DATA

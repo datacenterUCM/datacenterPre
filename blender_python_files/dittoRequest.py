@@ -72,11 +72,9 @@ class DittoRequest:
 
         #Se obtienen los valores de la temperatura y humedad y las localizaciones de cada nodo de la sala
         values, points = self.formatData()
-        print("points antes:", points)
         
+        #Se multiplican por 3 los valores de las posiciones de los nodos (porque 1m = 3 cuadros)
         points = list( map( lambda point: [point[0] * 3, point[1] * 3, point[2] * 3], points ) )
-            
-        print("points después", points)
         
         #################################################
         # INTERPOLATE DATA
