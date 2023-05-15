@@ -38,7 +38,7 @@ class ADDONAME_OT_ZValueOperator(bpy.types.Operator):
         description="Select an option",
         items=[
             ('temp', "Mostrar temperatura", "Se muestra la temperatura"),
-            ('hum', "Mostrar la humedad", "Se muestra la humedad"),            
+            ('hum', "Mostrar la humedad", "Se muestra la humedad"),
         ]
     )
 

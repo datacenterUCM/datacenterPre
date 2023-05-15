@@ -23,9 +23,12 @@ class BlenderScene(Singleton):
     sideXPoints = 10
     transparency = False
     alpha = 0.2
-    measurement = "temp"
+    measurement = configParams.measurement
     xLastPoint = ( sideXLength / (int(sideXPoints) + 1) ) * (int(sideXPoints) + 1)
     yLastPoint = ( sideYLength / (int(sideYPoints) + 1) ) * (int(sideYPoints) + 1)
+    fixedColorReference = configParams.fixedColorReference
+    tempColorRange = configParams.tempColorRange
+    humColorRange = configParams.humColorRange
 
     def __init__(self):
         self.logTag = "[MODULE blenderScene]"
@@ -120,10 +123,6 @@ class BlenderScene(Singleton):
             # Agregar el objeto del plano a la escena
             scene.collection.objects.link(plane)
 
-        print("planePoints len:", len(planePoints))
-        print("BlenderObjects.planePoints:", len(BlenderScene.planeObjects))
-        print("BlenderObjects.materialObjects len:", len(BlenderScene.materialObjects))
-
     # Función que se ejecuta cuando se cambia la resolución para volver a crear la escena
     def reCreateScene( self ):
         tempResults, humResults, planePoints = BlenderScene.dittoRequestInstance.getData()
@@ -140,34 +139,38 @@ class BlenderScene(Singleton):
     # Función que se ejecuta para refrescar los valores del mapa
     def updateScene(self, tempResults, humResults):
         # Se eliminan los valores nulos para calcular el maximo y el minimo de temperatura y humedad
-        print("tempResults:", tempResults)
         tempSinNan = [x for x in tempResults if not math.isnan(x)]
         humSinNan = [x for x in humResults if not math.isnan(x)]
 
         # Normalizar los valores de temperatura y humedad para que estén en el rango [0, 1]
-        temp_norm = (tempResults - np.min(tempSinNan)) / (np.max(tempSinNan) - np.min(tempSinNan))
-        hum_norm = (humResults - np.min(humSinNan)) / (np.max(humSinNan) - np.min(humSinNan))
+        if BlenderScene.fixedColorReference == False:
+            # La siguiente normalización se hace en función de los valores máximos medidos en cada momento:
+            temp_norm = (tempResults - np.min(tempSinNan)) / (np.max(tempSinNan) - np.min(tempSinNan))
+            hum_norm = (humResults - np.min(humSinNan)) / (np.max(humSinNan) - np.min(humSinNan))
+        else:
+            # La siguiente normalización se hace en función de unos máximos y mínimos fijos:
+            temp_norm = np.divide( ( np.subtract(tempResults,BlenderScene.tempColorRange[0] )) , (BlenderScene.tempColorRange[1] - BlenderScene.tempColorRange[0]) )
+            hum_norm = np.divide( (np.subtract(humResults, BlenderScene.humColorRange[0]) ) , (BlenderScene.humColorRange[1] - BlenderScene.humColorRange[0]) )
+
+        print("tempResults:", tempResults)
 
         # Mapear los valores normalizados de temperatura y humedad a valores RGB utilizando la escala de colores
         # Dependiendo de qué medida esté seleccionada (temperatura o humedad) se crean los colores para una u otra
+        print("BLENDER SCENE MESUREMENT =", BlenderScene.measurement)
         if BlenderScene.measurement == "temp":
             colors = self.cmap(temp_norm)
         else:
             colors = self.cmap(hum_norm)
 
-        print("BlenderObjects.planePoints:", len(BlenderScene.planeObjects))
-        print("BlenderObjects.materialObjects len:", len(BlenderScene.materialObjects))
-        print("num colores:,", len(colors))
-        #print(tempResults)
-        print("tempResults len:", len(tempResults))
-
         #Se modifican los colores de los planos
         if BlenderScene.transparency == True:
-            for i, point in enumerate(tempResults):
+            for i, point in enumerate(BlenderScene.materialObjects):
                 BlenderScene.materialObjects[i].node_tree.nodes["Principled BSDF"].inputs[0].default_value = colors[i]
                 BlenderScene.materialObjects[i].diffuse_color = colors[i]
         else:
-            for i, point in enumerate(tempResults):
+            print("materialObjects len:", len(BlenderScene.materialObjects))
+            print("humResults len:", len(humResults))
+            for i, point in enumerate(BlenderScene.materialObjects):
                 BlenderScene.materialObjects[i].diffuse_color = colors[i]
                 #print("color:", colors[i], "difuse color:", BlenderScene.materialObjects[i].diffuse_color)
 

@@ -29,7 +29,6 @@ class DittoRequest:
         self.sideXLength = sideXLength
         self.sideYLength = sideYLength
 
-
     def fetchData(self):
         auth = requests.auth.HTTPBasicAuth(self.user, self.passwd)
 
@@ -86,15 +85,24 @@ class DittoRequest:
         tempValues = values[:, 0] # Lista de temperaturas
         rhValues = values[:, 1] # Lista de humedades relativas
 
-        #Se obtienen las interpolaciones para un plano en z determinado
-        planeResults, planePoints = self.interpolator.interpolatePlane(points = points, 
-                                                                values = values, 
-                                                                zVal = self.zValue)
+        if Interpolator.mode == "heatMap":
+            #Se obtienen las interpolaciones para un plano en z determinado
+            planeResults, planePoints = self.interpolator.interpolatePlane(points = points, 
+                                                                    values = values, 
+                                                                    zVal = self.zValue)
+            
+            tempResults = planeResults[:,0] #Lista de temperaturas interpoladas
+            humResults = planeResults[:,1] #Lista de humedades interpoladas
 
-        tempResults = planeResults[:,0] #Lista de temperaturas interpoladas
-        humResults = planeResults[:,1] #Lista de humedades interpoladas
+            return tempResults, humResults, planePoints
+        
+        elif Interpolator.mode == "3DMap":
+            tempResults, humResults, points3D = self.interpolator.interpolate3D( points = points, 
+                                                                  values = values )
+            
+            return tempResults, humResults, points3D
 
-        return tempResults, humResults, planePoints
+        # return tempResults, humResults, planePoints
     
 
     def updateZ(self, blenderScene):
