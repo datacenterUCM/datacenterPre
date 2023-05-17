@@ -18,8 +18,14 @@ Nombre: datacenter
 Contraseña: IoTchart1999
 
 RASPI:
+IP: 147.96.81.123
 Usuario: datacenter
 Contraseña: 3x3=nueve
+
+MAQUINA VIRTUAL:
+IP: 146.96.85.89
+Usuario: timeuser
+Contraseña: T3m2D1t1$
 
 Para clonar el repositorio de github es necesario usar el siguiente comando:
 git clone git@github.com:datacenterUCM/datacenter.git

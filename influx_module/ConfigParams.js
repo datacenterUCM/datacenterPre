@@ -2,7 +2,7 @@ class ConfigParams{
 
     constructor(){
 
-        this.influxIP = 'localhost';
+        this.influxIP = '147.96.85.89';
         this.influxPort = '8086';
         this.database = 'datacenter'
         // Un "measurement" es equivalente a una tabla en sql

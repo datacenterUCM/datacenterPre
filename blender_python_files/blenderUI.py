@@ -250,6 +250,7 @@ class ADDONAME_OT_ModeSelection(bpy.types.Operator):
         if Interpolator.mode != self.preset_dropdown:
 
             Interpolator.mode = self.preset_dropdown
+            BlenderScene.mode = self.preset_dropdown
             # Es necesario recrear la escena
             blenderScene.deleteScene()
             blenderScene.reCreateScene()

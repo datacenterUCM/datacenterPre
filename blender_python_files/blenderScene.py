@@ -29,6 +29,7 @@ class BlenderScene(Singleton):
     fixedColorReference = configParams.fixedColorReference
     tempColorRange = configParams.tempColorRange
     humColorRange = configParams.humColorRange
+    mode = configParams.mode
 
     def __init__(self):
         self.logTag = "[MODULE blenderScene]"
@@ -152,7 +153,7 @@ class BlenderScene(Singleton):
             temp_norm = np.divide( ( np.subtract(tempResults,BlenderScene.tempColorRange[0] )) , (BlenderScene.tempColorRange[1] - BlenderScene.tempColorRange[0]) )
             hum_norm = np.divide( (np.subtract(humResults, BlenderScene.humColorRange[0]) ) , (BlenderScene.humColorRange[1] - BlenderScene.humColorRange[0]) )
 
-        print("tempResults:", tempResults)
+        #print("tempResults:", tempResults)
 
         # Mapear los valores normalizados de temperatura y humedad a valores RGB utilizando la escala de colores
         # Dependiendo de qué medida esté seleccionada (temperatura o humedad) se crean los colores para una u otra
@@ -168,11 +169,38 @@ class BlenderScene(Singleton):
                 BlenderScene.materialObjects[i].node_tree.nodes["Principled BSDF"].inputs[0].default_value = colors[i]
                 BlenderScene.materialObjects[i].diffuse_color = colors[i]
         else:
-            print("materialObjects len:", len(BlenderScene.materialObjects))
-            print("humResults len:", len(humResults))
             for i, point in enumerate(BlenderScene.materialObjects):
                 BlenderScene.materialObjects[i].diffuse_color = colors[i]
                 #print("color:", colors[i], "difuse color:", BlenderScene.materialObjects[i].diffuse_color)
+        
+
+    # Esta función se ejecuta cuando se actualizan los datos de los sensores. Comprueba si nos encontramos en modo mapa plano o 3D
+    def checkIncommingData(self, tempResults, humResults, planePoints):
+        # Si el modo es el mapa de calor plano tan sólo se actualiza el color de los planos
+        if BlenderScene.mode == "heatMap":
+            self.updateScene(tempResults=tempResults, humResults=humResults)
+        # Si el modo es el mapa 3D se comprueba si los puntos nuevos coinciden con los puntos antiguos. Se debe
+        # crear los puntos nuevos, se mantienen los que coinciden y se borran los viejos.
+        elif BlenderScene.mode == "3DMap":
+            print("len planeObjects:", len(BlenderScene.planeObjects))
+            print("len planePoints:", len(planePoints))
+
+            # Se eliminan los puntos viejos:
+            for plane in BlenderScene.planeObjects:
+                if plane not in planePoints:
+                    BlenderScene.planeObjects.remove(plane)
+                    #TODO eliminar el plano de la escena
+
+            # Se añaden los puntos nuevos:
+            for plane in planePoints:
+                if plane not in BlenderScene.planeObjects:
+                    BlenderScene.planeObjects.append(plane)
+                    #TODO añadir el plano a la escena
+
+
+
+            self.updateScene(tempResults=tempResults, humResults=humResults)
+
 
     def updateZ(self, newZValue):
         # Se actualiza la posición z de la representación gráfica del mapa

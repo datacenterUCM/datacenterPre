@@ -9,7 +9,8 @@ from configParams import ConfigParams
 
 def update():
     tempResults, humResults, planePoints = twin.getData()
-    blenderScene.updateScene(tempResults=tempResults, humResults=humResults)
+    blenderScene.checkIncommingData(tempResults=tempResults, humResults=humResults, planePoints=planePoints)
+    #blenderScene.updateScene(tempResults=tempResults, humResults=humResults)
     return 10
 
 configParams = ConfigParams()
