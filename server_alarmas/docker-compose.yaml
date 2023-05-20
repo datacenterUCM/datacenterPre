@@ -1,0 +1,6 @@
+version: '3'
+services:
+  server_alarmas_container:
+    image: server_alarmas_image
+    restart: always
+    # Otros ajustes y configuraciones para el contenedor
