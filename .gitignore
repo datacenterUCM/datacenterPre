@@ -3,3 +3,4 @@
 /server_alarmas/node_modules/
 /server_alarmas/package-lock.json
 /codigo_nodos_ota_rollback/build/
+/datacenter_app/node_modules/
