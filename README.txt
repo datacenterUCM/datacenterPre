@@ -23,7 +23,7 @@ Usuario: datacenter
 Contraseña: 3x3=nueve
 
 MAQUINA VIRTUAL:
-IP: 146.96.85.89
+IP: 147.96.85.89
 Usuario: timeuser
 Contraseña: T3m2D1t1$
 
