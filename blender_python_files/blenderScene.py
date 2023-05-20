@@ -157,7 +157,6 @@ class BlenderScene(Singleton):
 
         # Mapear los valores normalizados de temperatura y humedad a valores RGB utilizando la escala de colores
         # Dependiendo de qué medida esté seleccionada (temperatura o humedad) se crean los colores para una u otra
-        print("BLENDER SCENE MESUREMENT =", BlenderScene.measurement)
         if BlenderScene.measurement == "temp":
             colors = self.cmap(temp_norm)
         else:
@@ -185,20 +184,47 @@ class BlenderScene(Singleton):
             print("len planeObjects:", len(BlenderScene.planeObjects))
             print("len planePoints:", len(planePoints))
 
+            # Es necesario trabajar con listas (no arrays de numpy) y redondear los valores decimales de las localizaciones de los puntos
+            # ya que no coinciden exactamente.
+            planePointsList = list( map( lambda plane: plane.tolist(), planePoints ) ) # Lista redondeada
+            for index, plane in enumerate(planePointsList):
+                planePointsList[index] = [round(num, 3) for num in plane]
+
+            # Lista de índices cuyos planos y materiales se eliminarán
+            indexList = []
+
             # Se eliminan los puntos viejos:
-            for plane in BlenderScene.planeObjects:
-                if plane not in planePoints:
-                    BlenderScene.planeObjects.remove(plane)
-                    #TODO eliminar el plano de la escena
+            for index, plane in enumerate(BlenderScene.planeObjects.copy()):
+                # Se redondean los decimales de los puntos:
+                roundedPlane = [round(num, 3) for num in list(plane.location)]
+                # Si el nuevo punto no se encuentra entre los anteriores se elimina
+                if roundedPlane not in planePointsList:
+                    indexList.append(index)
+                    bpy.data.objects.remove(plane, do_unlink=True) # Se elimina el plano de la escena
+                    bpy.data.materials.remove(BlenderScene.materialObjects[index], do_unlink=True) # Se elimina el material de la escena
 
+            # Se eliminan los planos no necesarios
+            print("Eliminando", indexList, "puntos")
+            BlenderScene.planeObjects = [x for i, x in enumerate(BlenderScene.planeObjects) if i not in indexList]
+            BlenderScene.materialObjects = [x for i, x in enumerate(BlenderScene.materialObjects) if i not in indexList]
+
+            locations = []
+            for index, plane in enumerate(BlenderScene.planeObjects):
+                locations.append( [round(num, 3) for num in plane.location] )
+
+            newPlanePoints = []
             # Se añaden los puntos nuevos:
-            for plane in planePoints:
-                if plane not in BlenderScene.planeObjects:
-                    BlenderScene.planeObjects.append(plane)
-                    #TODO añadir el plano a la escena
+            for index, plane in enumerate(planePointsList):
+                roundedPlane = [round(num, 3) for num in plane]
+                if plane not in locations:
+                    newPlanePoints.append( plane )
 
+            print("Añadiendo", len(newPlanePoints),"puntos nuevos")
 
+            # Se añaden los puntos
+            self.createScene(newPlanePoints)
 
+            # Se actualiza la escena para dar color a los nuevos puntos
             self.updateScene(tempResults=tempResults, humResults=humResults)
 
 
@@ -285,3 +311,7 @@ class BlenderScene(Singleton):
 
             # Se guardan las referencias de los planos para poder modificarlos luego
             BlenderScene.materialObjects.append( material )
+
+
+
+

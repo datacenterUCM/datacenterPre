@@ -54,9 +54,6 @@ class Regressions:
         values = np.array(values)
         pointsToPredict = np.array(pointsToPredict)
 
-        print("points: ", points)
-        print("values:", values)
-
         rbfTemp = Rbf(points[:, 0], points[:, 1], points[:, 2], values[:, 0])
         rbfHum = Rbf(points[:, 0], points[:, 1], points[:, 2], values[:, 1])
 
@@ -68,7 +65,5 @@ class Regressions:
         predictions = list(zip(tempPredictions, humPredictions))
 
         predictionsArray = np.array([list(tupla) for tupla in predictions])
-
-        print("predictions:", predictionsArray)
 
         return predictionsArray

@@ -2,13 +2,13 @@ class ConfigParams():
 
     def __init__(self):
         
-        self.dittoUrl = 'http://147.96.81.123:8080/api/2/things/org.eclipse.ditto:datacentertwin2'
-        #self.dittoUrl = 'http://localhost:8080/api/2/things/org.eclipse.ditto:sergio-room-v2'
+        #self.dittoUrl = 'http://147.96.81.123:8080/api/2/things/org.eclipse.ditto:datacentertwin2'
+        self.dittoUrl = 'http://localhost:8080/api/2/things/org.eclipse.ditto:sergio-room-v2'
 
-        self.dittoUser = 'datacenter'
-        #self.dittoUser = 'sergio'
-        self.dittoPass = 'esp32twin'
-        #self.dittoPass = 'sergiotfm'
+        #self.dittoUser = 'datacenter'
+        self.dittoUser = 'sergio'
+        #self.dittoPass = 'esp32twin'
+        self.dittoPass = 'sergiotfm'
 
         # Longitud de los lados de la sala
         self.sideXLength = 3 * 7.26
@@ -19,7 +19,7 @@ class ConfigParams():
         self.sideYPoints = 15
 
         #Lista de objetos que se importarán del archivo que contiene la escena
-        self.objectsToImport = ["SimpleChair", "maquinaDeFrio", "estanteriaPeque1", "estanteriaPeque2", "estanteriaGrande", "suelo", "pared1", "pared2", "pared3"]
+        self.objectsToImport = ["SimpleChair", "maquinaDeFrio", "estanteriaPeque1", "estanteriaPeque2", "estanteriaGrande", "suelo", "pared1", "pared2", "pared3", "Point"]
 
         self.blenderObjectsRoute = '/home/sergio/Escritorio/master/TFM/git/datacenter/blender_python_files/objectsDatacenter.blend'
         #self.blenderObjectsRoute = '/home/sergio/Escritorio/master/TFM/blender_files/objectsDatacenter.blend'
@@ -49,12 +49,12 @@ class ConfigParams():
         #self.mode = "3DMap"
 
         # El rango inicial de temperaturas y humedades que se muestra en el mapa de calor 3D
-        self.map3DTempRange = [ 20, 22 ]
+        self.map3DTempRange = [ 33, 34 ]
         self.map3DHumRange = [ 30, 33 ]
 
         # Measurement inicial el cual se muestra en los mapas de calor
-        #self.measurement = "temp"
-        self.measurement = "hum"
+        self.measurement = "temp"
+        #self.measurement = "hum"
 
         # Variable que indica si los colores del mapa de calor se calculan sobre un valor fijo o variable:
         self.fixedColorReference = True

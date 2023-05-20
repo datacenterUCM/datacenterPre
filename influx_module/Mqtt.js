@@ -23,7 +23,10 @@ class MqttModule {
             console.log('Connecting to MQTT broker on', this.brokerIP + '...');
 
             this.client.subscribe(this.configParams.dittoTopic);
-            this.client.subscribe(this.configParams.vibrMeasTopic);
+            // Sólo se miden las vibraciones si se especifica en los parámetros de configuración
+            if (this.configParams.measureVibrations == true){
+                this.client.subscribe(this.configParams.vibrMeasTopic);
+            }
             console.log('Connected to broker on', this.brokerIP);
         });
 

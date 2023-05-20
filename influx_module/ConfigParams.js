@@ -10,6 +10,9 @@ class ConfigParams{
         // Este measurement guarda los valores de vibraciones:
         this.vibMeasurement = 'vibrations';
 
+        // Variable para indicar si se van a guardar las vibraciones en bbdd o no.
+        this.measureVibrations = true;
+
         this.brokerIP = '10.42.0.1';
         
         this.dittoTopic = 'eclipse-ditto-sandbox/org.eclipse.ditto:datacentertwin/things/twin/commands/modify';

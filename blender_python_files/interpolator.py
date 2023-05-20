@@ -65,10 +65,6 @@ class Interpolator:
     # points contiene las localizaciones de los sensores y request contiene el punto a interpolar
     def interpolatePoints(self, points, values, request):
 
-        print("points:", points)
-        print("values:", values)
-        # print("request:", request)
-
         if Interpolator.interpolator == "LinearNDInterpolator":
 
             linInter = LinearNDInterpolator(points, values)
@@ -161,8 +157,6 @@ class Interpolator:
         humResults = []
         points3D = []
 
-        print("allTempResults length:", len(allTempResults))
-
         for i in range(len(grid3D)):
 
             if(Interpolator.map3DTempRange[0] <= allTempResults[i] <= Interpolator.map3DTempRange[1]):
@@ -174,10 +168,6 @@ class Interpolator:
                 humResults.append( allHumResults[i])
                 if( Interpolator.measurement == "hum" ):
                     points3D.append( grid3D[i] )
-                    
-        print("tempResults len:", len(tempResults))
-        print("humResults len:", len(humResults))
-        print("points3D len:", len(points3D))
 
 
         return tempResults, humResults, points3D
