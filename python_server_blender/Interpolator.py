@@ -3,6 +3,7 @@ from scipy.interpolate import LinearNDInterpolator
 from ConfigParams import ConfigParams
 from scipy.spatial.distance import cdist
 from Regressions import Regressions
+import matplotlib.cm as cm
 
 
 class Interpolator:
@@ -12,7 +13,6 @@ class Interpolator:
     # Interpolator y que los valores de estas variables se mantengan
     sideXPoints = 10
     sideZPoints = 10
-    sideYPoints = configParams.sideYPoints
     sideXLength = configParams.sideXLength
     sideYLength = configParams.sideYLength
     xLastPoint = 10
@@ -20,15 +20,13 @@ class Interpolator:
     xBoundary = (0, 3)
     yBoundary = (0, 3)
     zBoundary = (0, 3)
-    map3DTempRange = configParams.map3DTempRange
-    map3DHumRange = configParams.map3DHumRange
-    measurement = configParams.measurement
-    mode = configParams.mode
     interpolator = configParams.interpolator
 
     def __init__(self):
         self.logTag = "[MODULE interpolator]"
         self.regressions = Regressions()
+        self.cmap = cm.get_cmap('jet')
+        self.configParams = ConfigParams()
 
     # Setter para las variables de clase
 
@@ -94,21 +92,18 @@ class Interpolator:
     # points contiene las localizaciones de los sensores, zVal contiene el valor de la coordenada z para la cual se
     # calculará el plano, numPoints contiene el número de puntos que se calcularán (expresados como un lado del plano,
     # si numPoints=3, se calcularán 3*3=9 puntos)
-    def interpolatePlane(self, points, values, zVal):
+    def interpolatePlane(self, points, measurement, sideYPoints, values, zVal, colorRange):
+        # Se calculan el número de puntos que tiene cada eje en función de los puntos del eje Y:
+        sideXPoints, sideZPoints = self.getSidePoints(sideYPoints)
 
         # Se determinan las posiciones de x e y que contendrán el último punto del grid (para que el mapa de calor no se salga
         # de los límites de las paredes)
-        Interpolator.xLastPoint = (Interpolator.sideXLength / (
-            int(Interpolator.sideXPoints) + 1)) * (int(Interpolator.sideXPoints))
-        Interpolator.yLastPoint = (Interpolator.sideYLength / (
-            int(Interpolator.sideYPoints) + 1)) * (int(Interpolator.sideYPoints))
+        xLastPoint, yLastPoint = self.getLastPoints(sideXPoints, sideYPoints)
 
         # Crear dos vectores de coordenadas X e Y
         # np.linspace crea un array de puntos equidistantes dado un inicio, un fin y un número de puntos
-        x = np.linspace(start=0, stop=Interpolator.xLastPoint,
-                        num=int(Interpolator.sideXPoints))
-        y = np.linspace(start=0, stop=Interpolator.yLastPoint,
-                        num=int(Interpolator.sideYPoints))
+        x = np.linspace(start=0, stop=xLastPoint, num=sideXPoints)
+        y = np.linspace(start=0, stop=yLastPoint, num=sideYPoints)
 
         # Crear el grid 2D con meshgrid y apilar filas con vstack
         grid = np.vstack(np.meshgrid(x, y)).reshape(2, -1).T.tolist()
@@ -117,9 +112,22 @@ class Interpolator:
         list(map(lambda e: e.append(zVal), grid))
 
         # Se obtienen las interpolaciones de todos los puntos
-        resultValues = self.interpolatePoints(points, values,  grid)
+        resultValues = self.interpolatePoints(points, values, grid)
 
-        return resultValues, grid
+        if measurement == "temp":
+            resultValues = resultValues[:,0] # Lista de temperaturas interpoladas
+        elif measurement == "hum":
+            resultValues = resultValues[:,1] # Lista de humedades interpoladas
+
+        # Se obtiene la escala de color de cada punto:
+        normValues = self.normalizeValues( resultValues, colorRange )
+
+        colors = self.cmap(normValues)
+
+        faceSideXLength = xLastPoint / (sideXPoints - 1)
+        faceSideYLength = yLastPoint / (sideYPoints - 1)
+
+        return colors, grid, faceSideXLength, faceSideYLength
 
     # Esta función interpola todos los puntos del interior de la sala, no sólo de un plano.
     def interpolate3D(self, points, values):
@@ -171,3 +179,28 @@ class Interpolator:
 
 
         return tempResults, humResults, points3D
+
+
+
+    def normalizeValues(self, results, colorRange):
+
+        # La siguiente normalización se hace en función de unos máximos y mínimos fijos:
+        normValues = np.divide( ( np.subtract(results,colorRange[0] )) , (colorRange[1] - colorRange[0]) )
+
+        return normValues
+
+
+    def getSidePoints(self, sideYPoints):
+        sideXPoints = round(
+            (self.configParams.sideXLength / self.configParams.sideYLength) * sideYPoints)
+        sideZPoints = round(
+            (self.configParams.sideZLength / self.configParams.sideYLength) * sideYPoints)
+
+        return sideXPoints, sideZPoints
+
+
+    def getLastPoints(self, sideXPoints, sideYPoints):
+        xLastPoint = (self.configParams.sideXLength / (sideXPoints + 1)) * sideXPoints
+        yLastPoint = (Interpolator.sideYLength / (sideYPoints + 1)) * sideYPoints
+
+        return xLastPoint, yLastPoint

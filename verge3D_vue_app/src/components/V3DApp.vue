@@ -5,7 +5,7 @@
       class="fullscreen-button fullscreen-open"
       title="Toggle fullscreen mode"
       ></div>
-    <UserInterfaceComponent @updateZEvent="updateZ"></UserInterfaceComponent>
+    <UserInterfaceComponent ref="userInterface" @changeMeasurementEvent="changeMeasurement" @changeResolutionEvent="changeResolution" @updateZEvent="updateZ" @changeModeEvent="changeMode"></UserInterfaceComponent>
   </div>
 </template>
 
@@ -14,6 +14,7 @@ import { createApp } from '../v3dApp/app';
 import UserInterfaceComponent from '@/components/UserInterfaceComponent'
 import { v4 as uuidv4 } from 'uuid';
 const { Functions } = require('@/logic/functions');
+const { ConfigParams } = require('@/logic/ConfigParams')
 
 export default {
   name: 'V3DApp',
@@ -26,10 +27,51 @@ export default {
 
   methods:{
 
-    //Función que ejecuta el evento "updateZEvent" que emite el hijo.
+    // Función que ejecuta el evento "updateZEvent" que emite el hijo.
     updateZ(value){
-      this.functions.updateZ(this.app, value)
-    }
+      this.configParams.zValue = value
+      this.functions.zValue = value
+      this.functions.updateZ(value)
+    },
+    // Función que ejecuta el evento "changeModeEvent" que emite el hijo.
+    changeMode(){
+      this.functions.changeMode(this.configParams.mode)
+      if (this.configParams.mode == "heatMap"){
+        this.configParams.mode = "3DMap"
+        this.$refs.userInterface.changeModeButtonName("Mapa 3D")
+      }
+      else if (this.configParams.mode == "3DMap"){
+        this.configParams.mode = "heatMap"
+        this.$refs.userInterface.changeModeButtonName("Mapa plano")
+      }
+
+      //this.functions.pruebas()
+      //this.functions.createPlane(planeData)
+        
+    },
+    changeMeasurement(){
+      this.functions.changeMeasurement()
+      if (this.configParams.measurement == "temp"){
+        this.configParams.measurement = "hum"
+        this.$refs.userInterface.changeMeasurementButtonName("Mostrar temperatura")
+      }
+      else if (this.configParams.measurement == "hum"){
+        this.configParams.measurement = "temp"
+        this.$refs.userInterface.changeMeasurementButtonName("Mostrar humedad")
+      }
+    },
+    // Función que ejecuta el evento "changeResolutionEvent" que emite el hijo
+    changeResolution(value){
+      if(value != this.configParams.sideYPoints){
+        this.configParams.sideYPoints = value
+        this.functions.sideYPoints = value
+
+        this.functions.deleteScene()
+        this.functions.createScene(this.configParams.zValue, this.configParams.sideYPoints, this.configParams.measurement, this.configParams.tempColorRange)
+
+      }
+    },
+    
   },
 
   created() {
@@ -66,17 +108,30 @@ export default {
   },
 
   mounted() {
-    this.loadApp();
-    
-    this.functions = new Functions()
     this.configParams = new ConfigParams()
 
-    this.functions.createScene(this.app, this.configParams.defaultZValue, this.configParams.sideYPoints, this.configParams.measurement, this.configParams.map3DTempRange)
+    this.loadApp().then(result => {
+
+      this.functions = new Functions(this.app)
+      this.functions.createScene(this.configParams.defaultZValue, this.configParams.sideYPoints, this.configParams.measurement, this.configParams.tempColorRange)
+      this.functions.initTimer()
+    })
+  
   },
 
   beforeDestroy() {
     this.disposeApp();
   },
+
+  watch: {
+  app(newValue) {
+    console.log("Cambió")
+    if (newValue !== null && this.functions === null) {
+      this.functions = new Functions();
+    }
+  }
+},
+
 }
 </script>
 

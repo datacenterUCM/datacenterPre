@@ -9,7 +9,7 @@ server_address = (configParams.IP, configParams.port)
 
 # Crear una instancia del servidor HTTP
 httpd = HTTPServer(server_address, Controller)
+print('Server listening on port', configParams.port)
 
 # Iniciar el servidor
-print('Server listening on port', configParams.port)
 httpd.serve_forever()

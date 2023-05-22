@@ -3,10 +3,11 @@ class ConfigParams{
     constructor(){
 
         // Url del servidor de python
-        this.serverUrl = 'http://192.168.1.36:8085'
+        //this.serverUrl = 'http://192.168.1.44:8085'
+        this.serverUrl = 'http://localhost:8085'
 
         // Paths del servidor
-        this.getPlanePointspath = '/getPlanePoints'
+        this.getPlanePointsPath = '/getPlanePoints'
         this.get3DPointsPath = '/get3DPoints'
 
         // Longitud de los lados de la sala
@@ -23,7 +24,8 @@ class ConfigParams{
         this.blenderObjectsRoute = '/home/sergio/Escritorio/master/TFM/git/datacenter/blender_python_files/objectsDatacenter.blend'
         //this.blenderObjectsRoute = '/home/sergio/Escritorio/master/TFM/blender_files/objectsDatacenter.blend'
 
-        this.defaultZValue = 2.25 // Valor para la Z inicial del mapa de calor
+        this.defaultZValue = 2.25 * 3 // Valor para la Z inicial del mapa de calor
+        this.zValue = 2.25 * 3 // Variable donde se almacena el valor de z actual
 
         this.twinXLength = 7.26
         this.twinYLength = 2.74
@@ -56,11 +58,13 @@ class ConfigParams{
         //this.measurement = "hum"
 
         // Variable que indica si los colores del mapa de calor se calculan sobre un valor fijo o variable:
-        this.fixedColorReference = True
+        this.fixedColorReference = true
         // Temperaturas máximas y mínimas para la representación de colores del mapa. 
-        this.tempColorRange = [0, 50]
-        this.humColorRange = [0, 100]
+        this.tempColorRange = [23, 33]
+        this.humColorRange = [15, 40]
 
     }
 
 }
+
+module.exports = {ConfigParams} 
