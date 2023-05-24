@@ -18,6 +18,8 @@ class Controller(BaseHTTPRequestHandler):
 
         self.pathWhithNoParams = self.path[:self.path.index('?')]
 
+        print("PATH WITH NO PARAMS:", self.pathWhithNoParams)
+
         if self.pathWhithNoParams == '/getPlanePoints':
             # Obtener los parámetros de la URL
             parsed_url = urlparse(self.path)
@@ -25,7 +27,6 @@ class Controller(BaseHTTPRequestHandler):
 
             print(query_params)
 
-            print("Val:", query_params.get('zVal', [''])[0])
             zVal = float(query_params.get('zVal', [''])[0])
             sideYPoints = int(query_params.get('sideYPoints', [''])[0])
             measurement = query_params.get('measurement', [''])[0]
@@ -36,11 +37,9 @@ class Controller(BaseHTTPRequestHandler):
             mode = "heatMap"
             print(zVal, sideYPoints, measurement, colorRange)
 
-            data = self.dittoRequest.getData(zVal, sideYPoints, measurement, colorRange, mode)
+            data = self.dittoRequest.getData(zVal, sideYPoints, measurement, colorRange, mode, None)
 
-            response = {"tiskito":"si"}
             # Convertir el diccionario en JSON
-            #print("data:", data)
             dataJson = json.dumps(data)
             # Enviar la respuesta al cliente
             self.send_response(200)
@@ -50,8 +49,38 @@ class Controller(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(dataJson.encode('utf-8'))
 
-        elif self.pathWhithNoParams == 'get3DPoints':
-            pass
+        elif self.pathWhithNoParams == '/get3DPoints':
+            # Obtener los parámetros de la URL
+            parsed_url = urlparse(self.path)
+            query_params = parse_qs(parsed_url.query)
+
+            print(query_params)
+
+            sideYPoints = int(query_params.get('sideYPoints', [''])[0])
+            measurement = query_params.get('measurement', [''])[0]
+            # Se da formato a "colorRange" debe ser una lista de enteros
+            colorRange = query_params.get('colorRange', [''])[0]
+            colorRange = colorRange.split(',')
+            colorRange = list( map( lambda color : int(color), colorRange ) ) 
+            # Se da formato a "range" debe ser una lista de floats
+            searchRange = query_params.get('searchRange', [''])[0]
+            searchRange = searchRange.split(',')
+            searchRange = list( map( lambda value : float(value), searchRange ) ) 
+
+            mode = "3DMap"
+            print(sideYPoints, measurement, colorRange, searchRange)
+
+            data = self.dittoRequest.getData(None, sideYPoints, measurement, colorRange, mode, searchRange)
+
+            # Convertir el diccionario en JSON
+            dataJson = json.dumps(data)
+            # Enviar la respuesta al cliente
+            self.send_response(200)
+            self.send_header('Content-type', 'application/json')
+            self.send_header('Access-Control-Allow-Origin', '*')  # Permitir solicitudes desde cualquier origen
+            self.send_header('Access-Control-Allow-Methods', 'GET')  # Permitir solo solicitudes GET
+            self.end_headers()
+            self.wfile.write(dataJson.encode('utf-8'))
         else:
             print("self.path:", self.path)
             # Enviar una respuesta de error si la ruta no coincide

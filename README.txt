@@ -37,3 +37,6 @@ Para hacer un push a github es necesario hacer lo siguiente:
 
 Para crear y usar una clave ssh para github:
 	
+Si ditto no funciona al conectarse se debe cambiar el "envirorment"
+Name: local_ditto
+API URI: http://cripta.fdi.ucm.es:8080

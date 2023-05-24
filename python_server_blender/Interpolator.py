@@ -98,7 +98,7 @@ class Interpolator:
 
         # Se determinan las posiciones de x e y que contendrán el último punto del grid (para que el mapa de calor no se salga
         # de los límites de las paredes)
-        xLastPoint, yLastPoint = self.getLastPoints(sideXPoints, sideYPoints)
+        xLastPoint, yLastPoint, zLastPoint = self.getLastPoints(sideXPoints, sideYPoints, sideZPoints)
 
         # Crear dos vectores de coordenadas X e Y
         # np.linspace crea un array de puntos equidistantes dado un inicio, un fin y un número de puntos
@@ -130,25 +130,19 @@ class Interpolator:
         return colors, grid, faceSideXLength, faceSideYLength
 
     # Esta función interpola todos los puntos del interior de la sala, no sólo de un plano.
-    def interpolate3D(self, points, values):
+    def interpolate3D(self, points, measurement, sideYPoints, colorRange, values, searchRange):
+        # Se calculan el número de puntos que tiene cada eje en función de los puntos del eje Y:
+        sideXPoints, sideZPoints = self.getSidePoints(sideYPoints)
 
         # Se determinan las posiciones de x, y, z que contendrán el último punto del grid (para que el mapa de calor no se salga
         # de los límites de las paredes)
-        Interpolator.zLastPoint = (Interpolator.configParams.sideZLength / (
-            int(Interpolator.sideZPoints) + 1)) * (int(Interpolator.sideZPoints))
-        Interpolator.xLastPoint = (Interpolator.sideXLength / (
-            int(Interpolator.sideXPoints) + 1)) * (int(Interpolator.sideXPoints))
-        Interpolator.yLastPoint = (Interpolator.sideYLength / (
-            int(Interpolator.sideYPoints) + 1)) * (int(Interpolator.sideYPoints))
+        xLastPoint, yLastPoint, zLastPoint = self.getLastPoints(sideXPoints, sideYPoints, sideZPoints)
 
         # Crear tres vectores de coordenadas X Y Z
         # np.linspace crea un array de puntos equidistantes dado un inicio, un fin y un número de puntos
-        x = np.linspace(start=0, stop=Interpolator.xLastPoint,
-                        num=int(Interpolator.sideXPoints))
-        y = np.linspace(start=0, stop=Interpolator.yLastPoint,
-                        num=int(Interpolator.sideYPoints))
-        z = np.linspace(start=0, stop=Interpolator.zLastPoint,
-                        num=int(Interpolator.sideZPoints))
+        x = np.linspace(start=0, stop=xLastPoint, num=sideXPoints)
+        y = np.linspace(start=0, stop=yLastPoint, num=sideYPoints)
+        z = np.linspace(start=0, stop=zLastPoint, num=sideZPoints)
 
         # Crear el grid 3D con meshgrid
         grid3D_x, grid3D_y, grid3D_z = np.meshgrid(x, y, z)
@@ -164,21 +158,42 @@ class Interpolator:
         tempResults = []
         humResults = []
         points3D = []
+        results = []
 
+        # Se obtienen las temperaturas y humedades que están en el rango especificado
         for i in range(len(grid3D)):
 
-            if(Interpolator.map3DTempRange[0] <= allTempResults[i] <= Interpolator.map3DTempRange[1]):
-                tempResults.append( allTempResults[i] )
-                if( Interpolator.measurement == "temp" ):
-                    points3D.append( grid3D[i] )
+            if measurement == "temp":
+                if(searchRange[0] <= allTempResults[i] <= searchRange[1]):
+                    results.append( allTempResults[i] )
+                    points3D.append( grid3D[i].tolist() )
 
-            if(Interpolator.map3DHumRange[0] <= allHumResults[i] <= Interpolator.map3DHumRange[1]):
-                humResults.append( allHumResults[i])
-                if( Interpolator.measurement == "hum" ):
-                    points3D.append( grid3D[i] )
+            elif measurement == "hum":
+                if(searchRange[0] <= allHumResults[i] <= searchRange[1]):
+                    results.append( allHumResults[i] )
+                    points3D.append( grid3D[i].tolist() )
 
+            """if measurement == "temp":
+                if(searchRange[0] <= allTempResults[i] <= map3DTempRange[1]):
+                    tempResults.append( allTempResults[i] )
+                    if( Interpolator.measurement == "temp" ):
+                        points3D.append( grid3D[i] )
 
-        return tempResults, humResults, points3D
+            elif measurement == "hum":
+                if(Interpolator.map3DHumRange[0] <= allHumResults[i] <= Interpolator.map3DHumRange[1]):
+                    humResults.append( allHumResults[i])
+                    if( Interpolator.measurement == "hum" ):
+                        points3D.append( grid3D[i] )"""
+
+        # Se obtiene la escala de color de cada punto:
+        normValues = self.normalizeValues( results, colorRange )
+
+        colors = self.cmap(normValues)
+
+        faceSideXLength = xLastPoint / (sideXPoints - 1)
+        faceSideYLength = yLastPoint / (sideYPoints - 1)
+
+        return colors, points3D, faceSideXLength, faceSideYLength
 
 
 
@@ -199,8 +214,9 @@ class Interpolator:
         return sideXPoints, sideZPoints
 
 
-    def getLastPoints(self, sideXPoints, sideYPoints):
+    def getLastPoints(self, sideXPoints, sideYPoints, sideZPoints):
         xLastPoint = (self.configParams.sideXLength / (sideXPoints + 1)) * sideXPoints
-        yLastPoint = (Interpolator.sideYLength / (sideYPoints + 1)) * sideYPoints
+        yLastPoint = (self.configParams.sideYLength / (sideYPoints + 1)) * sideYPoints
+        zLastPoint = (self.configParams.sideZLength / (sideZPoints +1)) * sideZPoints
 
-        return xLastPoint, yLastPoint
+        return xLastPoint, yLastPoint, zLastPoint

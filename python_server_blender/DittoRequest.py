@@ -58,7 +58,7 @@ class DittoRequest:
         return values, points
 
 
-    def getData( self , zVal, sideYPoints, measurement, colorRange, mode):
+    def getData( self , zVal, sideYPoints, measurement, colorRange, mode, searchRange):
         #################################################
         # FETCH DATA FROM DITTO
         #################################################
@@ -97,12 +97,19 @@ class DittoRequest:
             return data
         
         elif mode == "3DMap":
-            tempResults, humResults, points3D = self.interpolator.interpolate3D( points = points, 
-                                                                  values = values )
+            planeResults, planePoints, faceSideXLength, faceSideYLength = self.interpolator.interpolate3D( points = points, 
+                                                                  measurement = measurement,
+                                                                  sideYPoints = sideYPoints,
+                                                                  colorRange = colorRange,
+                                                                  values = values,
+                                                                  searchRange = searchRange )
             
-            return tempResults, humResults, points3D
+            data = {"planeResults": planeResults.tolist(), 
+                    "planePoints": planePoints, 
+                    "faceSideXLength": faceSideXLength, 
+                    "faceSideYLength": faceSideYLength}
 
-        # return tempResults, humResults, planePoints
+            return data
     
 
     def updateZ(self, blenderScene):
