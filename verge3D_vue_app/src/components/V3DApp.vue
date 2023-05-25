@@ -2,29 +2,34 @@
   <div :id="containerId">
     <div
       :id="fsButtonId"
-      class="fullscreen-button fullscreen-open"
+     class="fullscreen-button fullscreen-open"
       title="Toggle fullscreen mode"
-      ></div>
-      <UserInterfaceComponent v-if="showInterface" ref="userInterface" 
-                              @changeMeasurementEvent="changeMeasurement" 
-                              @changeResolutionEvent="changeResolution" 
-                              @updateZEvent="updateZ" 
-                              @changeModeEvent="changeMode"
-                              @minTempChangeEvent="changeMinTemp"
-                              @maxTempChangeEvent="changeMaxTemp"
-                              @minHumChangeEvent="changeMinHum"
-                              @maxHumChangeEvent="changeMaxHum"
-                              @applyRangeEvent="applyRange"
-                              
-                              ></UserInterfaceComponent>
-      <HideButtonComponent ref="hideButtonComp" @showUIEvent="showUI"></HideButtonComponent>
-  </div>
+    ></div>
+
+    <UserInterfaceComponent v-if="showInterface" ref="userInterface" 
+      @changeMeasurementEvent="changeMeasurement" 
+      @changeResolutionEvent="changeResolution" 
+      @updateZEvent="updateZ" 
+      @changeModeEvent="changeMode"
+      @tempChangeEvent="tempChange"
+      @humChangeEvent="humChange"
+      @applyRangeEvent="applyRange"
+      @tempColorChangeEvent="tempColorChange"
+      @humColorChangeEvent="humColorChange"
+      @applyColorRangeEvent="applyColorRange"
+    ></UserInterfaceComponent>
+            
+    <InfoComponent></InfoComponent>
+
+    </div>
+
 </template>
 
 <script>
 import { createApp } from '../v3dApp/app';
 import UserInterfaceComponent from '@/components/UserInterfaceComponent'
 import HideButtonComponent from '@/components/UserInterfaceComponent.vue'
+import InfoComponent from '@/components/InfoComponent.vue'
 import { v4 as uuidv4 } from 'uuid';
 const { Functions } = require('@/logic/functions');
 const { ConfigParams } = require('@/logic/ConfigParams')
@@ -43,7 +48,8 @@ export default {
   components:{
 
     UserInterfaceComponent,
-    HideButtonComponent
+    HideButtonComponent,
+    InfoComponent
 
   },
 
@@ -92,7 +98,7 @@ export default {
         this.functions.changeResolution()
       }
     },
-    //Función para ocultar/mostrar la UI
+    // Función para ocultar/mostrar la UI
     showUI(){
       if (this.showInterface == false){
         this.showInterface = true
@@ -103,51 +109,33 @@ export default {
         this.$refs.hideButtonComp.changeText("Mostrar Interfaz")
       }
     },
-    //Función para cambiar la temperatura mínima del mapa 3D
-    changeMinTemp(value){
-      //La temperatura mínima no puede ser mayor que la temperatura máxima
-      if(this.functions.map3DTempRange[1] >= value){
-        this.functions.map3DTempRange[0] = value
-      }
-      else{
-        this.$refs.userInterface.setMinTemp(this.functions.map3DTempRange[0])
-      }
+    // Función para cambiar la temperatura mínima y máxima del mapa 3D
+    tempChange(min, max){
+      this.functions.map3DTempRange[0] = min
+      this.functions.map3DTempRange[1] = max
     },
-    //Función para cambiar la temperatura máxima del mapa 3D
-    changeMaxTemp(value){
-      //La temperatura máxima no puede ser menor que la temperatura mínima
-      if(this.functions.map3DTempRange[0] <= value){
-        this.functions.map3DTempRange[1] = value
-      }
-      else{
-        this.$refs.userInterface.setMaxTemp(this.functions.map3DTempRange[1])
-      }
+    // Función para cambiar la humedad mínima y máxima del mapa 3D
+    humChange(min, max){
+      this.functions.map3DHumRange[0] = min
+      this.functions.map3DHumRange[1] = max
     },
-    //Función para cambiar la humedad mínima del mapa 3D
-    changeMinHum(value){
-      //La humedad mínima no puede ser mayor que la humedad máxima
-      if(this.functions.map3DHumRange[1] >= value){
-        this.functions.map3DHumRange[0] = value
-      }
-      else{
-        this.$refs.userInterface.setMinHum(this.functions.map3DHumRange[0])
-      }
-    },
-    //Función para cambiar la humedad máxima del mapa 3D
-    changeMaxHum(value){
-      //La humedad máxima no puede ser menor que la humedad mínima
-      if(this.functions.map3DHumRange[0] <= value){
-        this.functions.map3DHumRange[1] = value
-      }
-      else{
-        this.$refs.userInterface.setMaxHum(this.functions.map3DHumRange[1])
-      }
-    },
-    //Función para alicar los cambios del rango de temperatura y humedad
+    // Función para alicar los cambios del rango de temperatura y humedad
     applyRange(){
       this.functions.updateScene(this.functions.app)
     },
-    
+    // Función para cambiar el rango de color de la temperatura
+    tempColorChange(min, max){
+      this.functions.tempColorRange = [min, max]
+    },
+    // Función para cambiar el rango de color de la humedad
+    humColorChange(min, max){
+      this.functions.humColorRange = [min, max]
+    },
+    // Función para aplicar los cambios del rango de colores
+    applyColorRange(){
+      this.functions.updateScene(this.functions.app)
+    }
+
   },
 
   created() {

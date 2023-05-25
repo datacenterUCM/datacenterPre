@@ -27,6 +27,7 @@
                     </v-card-text>
                     <v-slider
                         thumb-label
+                        :disabled="disableZ"
                         @change="updateZ"
                         v-model="zVal"
                         :min="minZValue"
@@ -35,10 +36,13 @@
                     >
                         <template v-slot:append>
                             <v-text-field
+                            :disabled="disableZ"
                             v-model="zVal"
+                            @change="updateZ"
                             class="mt-0 pt-0"
                             type="number"
-                            style="width: 35px"
+                            style="width: 50px"
+                            step="0.1"
                             ></v-text-field>
                         </template>
                     </v-slider>
@@ -61,9 +65,10 @@
                         <template v-slot:append>
                                 <v-text-field
                                 v-model="resVal"
+                                @change="updateResolution"
                                 class="mt-0 pt-0"
                                 type="number"
-                                style="width: 35px"
+                                style="width: 50px"
                                 ></v-text-field>
                         </template>
                     </v-slider>
@@ -83,138 +88,28 @@
             </v-row>
             <!-- Sliders para cambiar los límites de temperatura y humedad para el mapa3D -->
             <v-row class="mb-4 d-flex justify-center">
-                <v-card class="card-full-width">
-                    <v-card-text style="font-size: 15px;">
-                        Rangos de temperatura para el mapa 3D
-                    </v-card-text>
-                    <v-col>
-                        <v-row>
-                            <v-col cols="auto">
-                                <p>min</p>
-                            </v-col>
-                            <v-col>
-                                <v-slider
-                                thumb-label
-                                @change="updateMinTemp"
-                                v-model="minTempVal"
-                                :min="0"
-                                :max="100"
-                                step="0.1"
-                                >
-                                    <template v-slot:append>
-                                        <v-text-field
-                                        v-model="minTempVal"
-                                        class="mt-0 pt-0"
-                                        type="number"
-                                        style="width: 35px"
-                                        ></v-text-field>
-                                    </template>
-                                </v-slider>
-                            </v-col>
-                        </v-row>
-                        <v-row>
-                            <v-col cols="auto">
-                                <p>max</p>
-                            </v-col>
-                            <v-col>
-                                <v-slider
-                                thumb-label
-                                @change="updateMaxTemp"
-                                v-model="maxTempVal"
-                                :min="0"
-                                :max="100"
-                                step="0.1"
-                                >
-                                    <template v-slot:append>
-                                        <v-text-field
-                                        v-model="maxTempVal"
-                                        class="mt-0 pt-0"
-                                        type="number"
-                                        style="width: 35px"
-                                        ></v-text-field>
-                                    </template>
-                                </v-slider>
-                            </v-col>
-                        </v-row>
-                        <!-- Botón para aplicar los cambios al rango de temperatura del mapa 3D -->
-                        <v-row class="mb-2 d-flex justify-center">
-                            <v-btn
-                            rounded
-                            color="primary"
-                            dark
-                            @click = "applyRange"
-                            >
-                            Aplicar
-                            </v-btn>
-                        </v-row>
-                    </v-col>
-                </v-card>
+                <DoubleSliderComponent :title="'Rangos de temperatura para el mapa 3D'"
+                                        :step="0.1"
+                                        @applyRangeEvent="applyRangeTemp"
+                                        ></DoubleSliderComponent>
             </v-row>
             <v-row class="mb-4 d-flex justify-center">
-                <v-card class="card-full-width">
-                    <v-card-text style="font-size: 15px;">
-                        Rangos de temperatura para el mapa 3D
-                    </v-card-text>
-                    <v-col>
-                        <v-row>
-                            <v-col>
-                                <v-slider
-                                thumb-label
-                                @change="updateMinHum"
-                                v-model="minHumVal"
-                                :min="0"
-                                :max="100"
-                                label="min"
-                                step="0.1"
-                                >
-                                    <template v-slot:append>
-                                        <v-text-field
-                                        v-model="minHumVal"
-                                        class="mt-0 pt-0"
-                                        type="number"
-                                        style="width: 35px"
-                                        ></v-text-field>
-                                    </template>
-                            
-                                </v-slider>
-                            </v-col>
-                        </v-row>
-                        <v-row>
-                            <v-col>
-                                <!-- MODIFICAR ESTE SLIDER -->
-                                <v-slider
-                                thumb-label
-                                v-model="maxHumVal"
-                                @change="updateMaxHum"
-                                :max="100"
-                                :min="0"
-                                label="max"
-                                class="align-center"
-                                >
-                                    <template v-slot:append>
-                                        <v-text-field
-                                        v-model="maxHumVal"
-                                        class="mt-0 pt-0"
-                                        type="number"
-                                        style="width: 35px"
-                                        ></v-text-field>
-                                    </template>
-                                </v-slider>
-                            </v-col>
-                        </v-row>
-                        <!-- Botón para aplicar los cambios al rango de temperatura del mapa 3D -->
-                        <v-row class="mb-2 d-flex justify-center">
-                            <v-btn
-                            rounded
-                            color="primary"
-                            dark
-                            @click = "applyRange"
-                            >
-                            Aplicar
-                            </v-btn>
-                        </v-row>
-                    </v-col>
-                </v-card>
+                <DoubleSliderComponent :title="'Rangos de humedad para el mapa 3D'"
+                                        :step="0.1"
+                                        @applyRangeEvent="applyRangeHum"
+                                        ></DoubleSliderComponent>
+            </v-row>
+            <v-row class="mb-4 d-flex justify-center">
+                <DoubleSliderComponent :title="'Rangos de color de temperatura'"
+                                        :step="1"
+                                        @applyRangeEvent="applyColorTemp"
+                                        ></DoubleSliderComponent>
+            </v-row>
+            <v-row class="mb-4 d-flex justify-center">
+                <DoubleSliderComponent :title="'Rangos de color de humedad'"
+                                        :step="1"
+                                        @applyRangeEvent="applyColorHum"
+                                        ></DoubleSliderComponent>
             </v-row>
         </v-col>
     </v-app>
@@ -243,8 +138,14 @@ background-color: blue;
 
 <script>
 
+import DoubleSliderComponent from '@/components/DoubleSliderComponent'
+
 export default {
     name: 'UserInterfaceComponent',
+
+    components:{
+        DoubleSliderComponent
+    },
 
     data() {
         return {
@@ -266,13 +167,9 @@ export default {
 
             zVal: 2.25,
             resVal: 15,
-
-            //Valores minimos y máximos de temperatura y humedad para el mapa 3D
-            minTempVal:28,
-            maxTempVal:29,
-            minHumVal:30,
-            maxHumVal:35
-
+            
+            // Varible para habilitar/deshabilitar la actualización de z
+            disableZ: false
         }
     },
 
@@ -282,6 +179,7 @@ export default {
             this.$emit('updateZEvent', value)
         },
         changeMode(){
+            this.disableZ = !this.disableZ
             this.$emit('changeModeEvent')
         },
         changeMeasurement(){
@@ -298,42 +196,26 @@ export default {
         updateResolution(value){
             this.$emit('changeResolutionEvent', value)
         },
-        //Funciones que se ejecutan para cambiar los valores del rango de temp y hum del mapa3D
-        updateMinTemp(value){
-            this.$emit('minTempChangeEvent', value)
-        },
-        updateMaxTemp(value){
-            this.$emit('maxTempChangeEvent', value)
-        },
-        updateMinHum(value){
-            this.$emit('minHumChangeEvent', value)
-        },
-        updateMaxHum(value){
-            console.log("tis")
-            this.$emit('maxHumChangeEvent', value)
-        },
-        //Funciones para rectificar los valores maximos y minimos de temp y hum del mapa 3D
-        setMinTemp(value){
-            this.minTempVal = value
-        },
-        setMaxTemp(value){
-            this.maxTempVal = value
-        },
-        setMinHum(value){
-            this.minHumVal = value
-        },
-        setMaxHum(value){
-            this.maxHumVal = value
-        },
-        setMinHum(value){
-            this.minHumVal = value
-        },
-        setMaxHum(value){
-            this.maxHumVal = value
-        },
         applyRange(){
             this.$emit('applyRangeEvent')
         },
+        //Funciones que se ejecutan para cambiar los valores del rango de temp y hum del mapa3D
+        applyRangeTemp(min, max){
+            this.$emit('tempChangeEvent', min, max)
+            this.$emit('applyRangeEvent')
+        },
+        applyRangeHum(min, max){
+            this.$emit('humChangeEvent', min, max)
+            this.$emit('applyRangeEvent')
+        },
+        applyColorTemp(min, max){
+            this.$emit('tempColorChangeEvent', min, max)
+            this.$emit('applyColorRangeEvent')
+        },
+        applyColorHum(min, max){
+            this.$emit('humColorChangeEvent', min, max)
+            this.$emit('applyColorRangeEvent')
+        }
     },
 }
 

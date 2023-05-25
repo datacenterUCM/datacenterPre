@@ -36,20 +36,24 @@ class Functions{
         else{
             colorRange = this.humColorRange
         }
+
+        console.log("updateZ")
+        console.log(zVal, this.sideYPoints, this.measurement, colorRange)
         this.requests.getPlanePoints(zVal, this.sideYPoints, this.measurement, colorRange).then(result =>{
             console.log(result)
 
             var contador = 0
 
+            self = this
             // Es necesario recorrer el objeto que contiene a todos los objetos de la escena y ver los que empiezan con el nombre "Plane"
             this.app.scene.traverse(function (child) {
                 // Verifica si el nombre del elemento comienza por "Plane"
                 if (child.name.startsWith('Plane')) {
 
                     // Se actualiza el color del mapa de calor
-                    child.material.color.r = result.planeResults[contador][0]
-                    child.material.color.g = result.planeResults[contador][1]
-                    child.material.color.b = result.planeResults[contador][2]
+                    const color = self.convertColorToHex(result.planeResults[contador])
+                    child.material.color.set(color)
+
                     contador = contador + 1
 
                     // Se modifica la posición
@@ -70,6 +74,8 @@ class Functions{
 
         if(this.mode == "heatMap"){
             // Se hace un fetch para obtener los datos
+            console.log("createScene")
+            console.log(zVal, sideYPoints, measurement, colorRange)
             this.requests.getPlanePoints(zVal, sideYPoints, measurement, colorRange).then(result => {
                 console.log(result)
                 for (var i=0; i<result.planeResults.length; i++){
@@ -157,7 +163,7 @@ class Functions{
         else if (this.measurement == "hum"){
             this.measurement = "temp"
         }
-        this.updateValues()
+        this.updateScene(this.app)
     }
 
     //Función para pintar un plano por pantalla
@@ -201,56 +207,6 @@ class Functions{
         return parseInt(result, 16);
     }
 
-    // Función para ACTUALIZAR los valores de color del mapa, ya sea el mapa plano o 3D
-    updateValues(){
-        if(this.mode == "heatMap"){
-
-            var colorRange = null
-            if (this.measurement == "temp"){
-                colorRange = this.tempColorRange
-            }
-            else{
-                colorRange = this.humColorRange
-            }
-            this.requests.getPlanePoints(this.zValue, this.sideYPoints, this.measurement, colorRange).then(result =>{
-
-                var contador = 0
-                // Es necesario recorrer el objeto que contiene a todos los objetos de la escena y ver los que empiezan con el nombre "Plane"
-                this.app.scene.traverse(function (child) {
-                    // Verifica si el nombre del elemento comienza por "Plane"
-                    if (child.name.startsWith('Plane')) {
-                        // Se actualiza el color del mapa de calor
-                        child.material.color.r = result.planeResults[contador][0]
-                        child.material.color.g = result.planeResults[contador][1]
-                        child.material.color.b = result.planeResults[contador][2]
-                        contador = contador + 1    
-                    }
-                });
-    
-                console.log("contador:" + contador)
-            }).catch(error => {
-                console.log(error)
-            })
-        }
-        else if (this.mode == "3DMap"){
-
-            var colorRange = null
-            var searchRange = null
-            if(this.measurement == "temp"){
-                colorRange = this.tempColorRange
-                searchRange = this.map3DTempRange
-            }
-            else{
-                colorRange = this.humColorRange
-                searchRange = this.map3DHumRange
-            }
-
-            this.deleteScene()
-            this.createScene(null, this.sideYPoints, this.measurement, colorRange, searchRange)
-
-        }
-    }
-
     // Funcion para cambiar la resolución
     changeResolution(){
 
@@ -271,7 +227,6 @@ class Functions{
 
     //Función que peticiona datos al back, CREA los elementos que faltan, BORRA los que no coinciden y ACTUALIZA los que si coinciden
     updateScene(app){
-        console.log("sape")
         if(this.mode == "3DMap"){
 
             var colorRange = null
@@ -304,10 +259,6 @@ class Functions{
                 // Se obtienen los elementos de la escena
                 this.app.scene.traverse(function (child) {
                     if (child.name.startsWith('Plane')) {
-                        
-                        
-                        /*console.log(`valores recibidos: x:${x}, y${y}, z${z}`)
-                        console.log(`valores actuales: x:${child.position.x}, y:${child.position.z}, z:${child.position.y}`)*/
 
                         var position = [child.position.x, child.position.z, child.position.y]
 
@@ -380,9 +331,9 @@ class Functions{
     // Función que se encarga de actualizar los datos 
     initTimer(){
 
-        setTimeout(function(){
-            setInterval(this.updateScene(this.app), 10000);
-        }, 3000)
+        /*setInterval(() => {
+            this.updateScene(this.app)
+        }, 10000);*/
         
     }
     

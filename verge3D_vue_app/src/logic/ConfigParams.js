@@ -50,8 +50,8 @@ class ConfigParams{
         //this.mode = "3DMap"
 
         // El rango inicial de temperaturas y humedades que se muestra en el mapa de calor 3D
-        this.map3DTempRange = [ 28, 29 ]
-        this.map3DHumRange = [ 30, 35 ]
+        this.map3DTempRange = [ 25, 26 ]
+        this.map3DHumRange = [ 25, 26 ]
 
         // Measurement inicial el cual se muestra en los mapas de calor
         this.measurement = "temp"
@@ -60,8 +60,8 @@ class ConfigParams{
         // Variable que indica si los colores del mapa de calor se calculan sobre un valor fijo o variable:
         this.fixedColorReference = true
         // Temperaturas máximas y mínimas para la representación de colores del mapa. 
-        this.tempColorRange = [23, 33]
-        this.humColorRange = [28, 60]
+        this.tempColorRange = [23, 36]
+        this.humColorRange = [33, 60]
 
     }
 
