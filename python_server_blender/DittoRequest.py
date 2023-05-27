@@ -82,7 +82,7 @@ class DittoRequest:
 
         if mode == "heatMap":
             #Se obtienen las interpolaciones para un plano en z determinado
-            planeResults, planePoints, faceSideXLength, faceSideYLength = self.interpolator.interpolatePlane(points = points, 
+            planeResults, planePoints, faceSideXLength, faceSideYLength, infoData = self.interpolator.interpolatePlane(points = points, 
                                                                     measurement = measurement,
                                                                     sideYPoints = sideYPoints,
                                                                     colorRange = colorRange,
@@ -92,12 +92,13 @@ class DittoRequest:
             data = {"planeResults": planeResults.tolist(), 
                     "planePoints": planePoints, 
                     "faceSideXLength": faceSideXLength, 
-                    "faceSideYLength": faceSideYLength}
+                    "faceSideYLength": faceSideYLength,
+                    "infoData": infoData}
 
             return data
         
         elif mode == "3DMap":
-            planeResults, planePoints, faceSideXLength, faceSideYLength = self.interpolator.interpolate3D( points = points, 
+            planeResults, planePoints, faceSideXLength, faceSideYLength, infoData = self.interpolator.interpolate3D( points = points, 
                                                                   measurement = measurement,
                                                                   sideYPoints = sideYPoints,
                                                                   colorRange = colorRange,
@@ -107,7 +108,8 @@ class DittoRequest:
             data = {"planeResults": planeResults.tolist(), 
                     "planePoints": planePoints, 
                     "faceSideXLength": faceSideXLength, 
-                    "faceSideYLength": faceSideYLength}
+                    "faceSideYLength": faceSideYLength,
+                    "infoData": infoData}
 
             return data
     

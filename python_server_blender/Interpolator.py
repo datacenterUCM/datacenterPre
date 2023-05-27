@@ -124,10 +124,24 @@ class Interpolator:
 
         colors = self.cmap(normValues)
 
+        # Se obtienen los valores maximos y minimos de temperatura y humedad
+        try:
+            maxVal = max(resultValues)
+            minVal = min(resultValues)
+        except ValueError:
+            minVal = 0
+            maxVal = 0
+        infoData= {
+            'max': maxVal, 
+            'min': minVal,
+            'maxColor': self.cmap( self.normalizeValues([maxVal], colorRange) )[0].tolist(),
+            'minColor': self.cmap( self.normalizeValues([minVal], colorRange) )[0].tolist()
+            }
+
         faceSideXLength = xLastPoint / (sideXPoints - 1)
         faceSideYLength = yLastPoint / (sideYPoints - 1)
 
-        return colors, grid, faceSideXLength, faceSideYLength
+        return colors, grid, faceSideXLength, faceSideYLength, infoData
 
     # Esta función interpola todos los puntos del interior de la sala, no sólo de un plano.
     def interpolate3D(self, points, measurement, sideYPoints, colorRange, values, searchRange):
@@ -173,27 +187,30 @@ class Interpolator:
                     results.append( allHumResults[i] )
                     points3D.append( grid3D[i].tolist() )
 
-            """if measurement == "temp":
-                if(searchRange[0] <= allTempResults[i] <= map3DTempRange[1]):
-                    tempResults.append( allTempResults[i] )
-                    if( Interpolator.measurement == "temp" ):
-                        points3D.append( grid3D[i] )
-
-            elif measurement == "hum":
-                if(Interpolator.map3DHumRange[0] <= allHumResults[i] <= Interpolator.map3DHumRange[1]):
-                    humResults.append( allHumResults[i])
-                    if( Interpolator.measurement == "hum" ):
-                        points3D.append( grid3D[i] )"""
-
         # Se obtiene la escala de color de cada punto:
         normValues = self.normalizeValues( results, colorRange )
 
         colors = self.cmap(normValues)
 
+        # Se obtienen los valores maximos y minimos de temperatura y humedad
+        try:
+            maxVal = max(results)
+            minVal = min(results)
+        except ValueError:
+            minVal = 0
+            maxVal = 0
+
+        infoData= {
+            'max': maxVal, 
+            'min': minVal,
+            'maxColor': self.cmap( self.normalizeValues([maxVal], colorRange) )[0].tolist(),
+            'minColor': self.cmap( self.normalizeValues([minVal], colorRange) )[0].tolist()
+            }
+
         faceSideXLength = xLastPoint / (sideXPoints - 1)
         faceSideYLength = yLastPoint / (sideYPoints - 1)
 
-        return colors, points3D, faceSideXLength, faceSideYLength
+        return colors, points3D, faceSideXLength, faceSideYLength, infoData
 
 
 
