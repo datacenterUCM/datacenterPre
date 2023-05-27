@@ -1,7 +1,7 @@
 <template>
-    <div class="right-div" >
+    <div class="right-div-2" >
 
-        <v-card class="fill-v-card my-card" :style="{ top: top + '%', right: right + '%' }">
+        <v-card class="fill-v-card my-card">
 
             <v-col cols="12" class="text-center">
                 <v-row>
@@ -12,7 +12,7 @@
                         <v-icon class="icon" :style="{ color: color1 }">mdi-circle</v-icon>
                     </v-col>
                     <v-col cols="5">
-                        <span  class="info-text-class">{{tag1}}</span>
+                        <span  class="info-text-class">{{tag1}}{{ unit }}</span>
                     </v-col>
                 </v-row>
             
@@ -24,7 +24,7 @@
                         <v-icon class="icon" :style="{ color: color2 }">mdi-circle</v-icon>
                     </v-col>
                     <v-col cols="5">
-                        <span class="info-text-class">{{ tag2 }}</span>
+                        <span class="info-text-class">{{ tag2 }}{{ unit }}</span>
                     </v-col>
                 </v-row>
             </v-col>
@@ -38,9 +38,11 @@
     .my-card {
     margin-top: 5px; /* Ajusta el valor según tus necesidades */
     }
-    .right-div {
+    .right-div-2 {
         position: fixed;
-        width: 160px;
+        top:0%;
+        right:0%;
+        width: 180px;
         height: 92px;
         /*background-color: blueviolet;*/
         margin-right:5px;
@@ -50,8 +52,8 @@
         height: 100%;
     }
     .fill-col{
-    width: 100%;
-    height: 100%;
+        width: 100%;
+        height: 100%;
     }
     .fill-v-card {
         width: 100%;
@@ -74,6 +76,7 @@
           tag2:{type: Number, default:0},
           color1:{type: String, default:'#aaaaaa'},
           color2:{type: String, default:'#aaaaaa'},
+          unit:{type:String, default:''},
 
           top:{type:Number, default:0},
           right:{type:Number, dafault:0}

@@ -141,7 +141,7 @@ class Interpolator:
         faceSideXLength = xLastPoint / (sideXPoints - 1)
         faceSideYLength = yLastPoint / (sideYPoints - 1)
 
-        return colors, grid, faceSideXLength, faceSideYLength, infoData
+        return colors, grid, faceSideXLength, faceSideYLength, infoData, resultValues
 
     # Esta función interpola todos los puntos del interior de la sala, no sólo de un plano.
     def interpolate3D(self, points, measurement, sideYPoints, colorRange, values, searchRange):
@@ -210,7 +210,7 @@ class Interpolator:
         faceSideXLength = xLastPoint / (sideXPoints - 1)
         faceSideYLength = yLastPoint / (sideYPoints - 1)
 
-        return colors, points3D, faceSideXLength, faceSideYLength, infoData
+        return colors, points3D, faceSideXLength, faceSideYLength, infoData, results
 
 
 

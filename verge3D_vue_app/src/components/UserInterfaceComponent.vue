@@ -6,6 +6,18 @@
             <h2 style="font-size: 20px; font-weight: bold; ">
                 INTERFAZ DE USUARIO
             </h2>
+
+            <v-row class="mt-4 mb-4 d-flex justify-center" v-if="!createdScene"> 
+                    <v-btn
+                    :disabled="createdScene"
+                    rounded
+                    color="primary"
+                    dark
+                    @click = "createScene"
+                    >
+                    Crear mapa
+                    </v-btn>
+            </v-row>
             <!-- Botón para cambiar la medida (temperatura o humedad) -->
             <!-- mb- significa "margin bottom" y mt- significa "margin top" -->
             <!-- Se usa d-flex y justify-center para centrar el botón con respecto al div-->
@@ -151,7 +163,7 @@ export default {
         return {
             // Valores máximos y mínimos de z
             minZValue: 0,
-            maxZValue: 3 * 4.5,
+            maxZValue: 4.5,
 
             // Valores máximos y mínimos de resolución
             minResValue: 10,
@@ -169,14 +181,22 @@ export default {
             resVal: 15,
             
             // Varible para habilitar/deshabilitar la actualización de z
-            disableZ: false
+            disableZ: false,
+
+            createdScene: false
         }
     },
 
     methods: {
+        createScene(){
+            this.$emit('createSceneEvent')
+        },
+        sceneCreated(){
+            this.createdScene = true
+        },
         updateZ(value){
             //Se emite un evento que ejecutará el padre para actualizar la Z
-            this.$emit('updateZEvent', value)
+            this.$emit('updateZEvent', value * 3)
         },
         changeMode(){
             this.disableZ = !this.disableZ

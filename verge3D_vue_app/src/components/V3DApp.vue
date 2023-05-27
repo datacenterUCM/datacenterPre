@@ -12,6 +12,7 @@
     :tag2="infoData.maxValue"
     :color1="infoData.minColor"
     :color2="infoData.maxColor"
+    :unit="popupCardInfo.unit"
     ></SimpleInfoComponent>
 
     <UserInterfaceComponent v-if="showInterface" ref="userInterface" 
@@ -25,18 +26,20 @@
       @tempColorChangeEvent="tempColorChange"
       @humColorChangeEvent="humColorChange"
       @applyColorRangeEvent="applyColorRange"
+      @createSceneEvent="createScene"
     ></UserInterfaceComponent>
 
-    <SimpleInfoComponent v-if="vCardShow"
-    :text1="infoData.minText"
-    :text2="infoData.maxText"
-    :tag1="infoData.minValue"
-    :tag2="infoData.maxValue"
-    :color1="infoData.minColor"
-    :color2="infoData.maxColor"
-    :top="vCardPos.x"
-    :right="vCardPos.y"
-    ></SimpleInfoComponent>
+    <PopupCard v-if="vCardShow"
+    :xValue="popupCardInfo.posx"
+    :yValue="popupCardInfo.posy"
+    :zValue="popupCardInfo.posz"
+    :text="popupCardInfo.text"
+    :color="popupCardInfo.color"
+    :value="popupCardInfo.value"
+    :unit="popupCardInfo.unit"
+    :top="vCardPos.y"
+    :right="vCardPos.x"
+    ></PopupCard>
 
     </div>
 
@@ -48,6 +51,7 @@ import UserInterfaceComponent from '@/components/UserInterfaceComponent'
 import HideButtonComponent from '@/components/UserInterfaceComponent.vue'
 import InfoComponent from '@/components/InfoComponent.vue'
 import SimpleInfoComponent from '@/components/SimpleInfoComponent.vue'
+import PopupCard from '@/components/PopupCard.vue'
 import { v4 as uuidv4 } from 'uuid';
 const { Functions } = require('@/logic/functions');
 const { ConfigParams } = require('@/logic/ConfigParams')
@@ -75,8 +79,16 @@ export default {
         x:0,
         y:100
       },
-      vCardShow: false
-
+      vCardShow: false,
+      popupCardInfo:{
+        posx: 0,
+        posy: 0,
+        posz: 0,
+        value: 0,
+        color: '#aaaaaa',
+        text: 'temp:',
+        unit: 'ºC'
+      }
     }
   },
 
@@ -84,11 +96,32 @@ export default {
     UserInterfaceComponent,
     HideButtonComponent,
     InfoComponent,
-    SimpleInfoComponent
+    SimpleInfoComponent,
+    PopupCard
 },
 
   methods:{
 
+    createScene(){
+      this.configParams = new ConfigParams()
+
+      this.functions = new Functions(this.app)
+      this.functions.createScene(this.configParams.defaultZValue, this.configParams.sideYPoints, this.configParams.measurement, this.configParams.tempColorRange, null).then((result) => {
+      this.infoData = result
+
+      this.$refs.userInterface.sceneCreated()
+
+      //Timer para actualizar la información periodicamente
+      setInterval(() => {
+        this.functions.updateScene(this.functions.app).then((result) => {
+          this.infoData = result
+        })
+      }, 10000)
+      })
+        .catch((error) => {
+          console.log(error)
+      })
+    },
     // Función que ejecuta el evento "updateZEvent" que emite el hijo.
     updateZ(value){
       this.configParams.zValue = value
@@ -126,12 +159,16 @@ export default {
         this.$refs.userInterface.changeMeasurementButtonName("Mostrar temperatura")
         this.infoData.minText = "min h:"
         this.infoData.maxText = "max h:"
+        this.popupCardInfo.text = 'hum:'
+        this.popupCardInfo.unit = '%'
       }
       else if (this.configParams.measurement == "hum"){
         this.configParams.measurement = "temp"
         this.$refs.userInterface.changeMeasurementButtonName("Mostrar humedad")
         this.infoData.minText = "min t:"
         this.infoData.maxText = "max t:"
+        this.popupCardInfo.text = 'temp:'
+        this.popupCardInfo.unit = 'ºC'
       }
     },
     // Función que ejecuta el evento "changeResolutionEvent" que emite el hijo
@@ -200,7 +237,7 @@ export default {
     this.uuid = uuidv4();
     this.containerId = `v3d-container-${this.uuid}`;
     this.fsButtonId = `fullscreen-button-${this.uuid}`;
-    this.sceneURL = 'v3dApp/datacenter.gltf';
+    this.sceneURL = 'v3dApp/objectsDatacenter.gltf';
 
     this.loadApp = async function() {
       ({ app: this.app, PL: this.PL } = await createApp({
@@ -226,30 +263,7 @@ export default {
   },
 
   mounted() {
-    console.log("MOUNTED")
-    this.configParams = new ConfigParams()
-
-    this.loadApp().then(result => {
-
-      this.functions = new Functions(this.app)
-      this.functions.createScene(this.configParams.defaultZValue, this.configParams.sideYPoints, this.configParams.measurement, this.configParams.tempColorRange, null).then((result) => {
-        this.infoData = result
-
-        //Timer para actualizar la información periodicamente
-      }).then(() => {
-        setInterval(() => {
-          this.functions.updateScene(this.functions.app).then((result) => {
-            this.infoData = result
-          }).catch((error) => {
-            console.log(error)
-          })
-        }, 10000)
-      })
-      .catch((error) => {
-        console.log(error)
-      })
-      
-    })
+    this.loadApp()
 
     //Variables para la interactividad con verge3D (Three.js)
     this.raycaster = new v3d.Raycaster();
@@ -257,11 +271,14 @@ export default {
 
     window.addEventListener( 'click', (event) => {
 
+      // Se obtiene la posición del ratón y se actualiza la variable mouse.
       this.mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
       this.mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
       
+      //Se edita el raycaster con la posición del ratón y la cámara
       this.raycaster.setFromCamera(this.mouse, this.app.camera)
       
+      // Se obtienen los objetos intersectados con el raycaster
       var isIntersected = this.raycaster.intersectObjects( this.app.scene.children );
 
       if(isIntersected.length > 0){
@@ -269,23 +286,22 @@ export default {
         const object = isIntersected[0].object
       
         if (object.name.startsWith('Plane')) {
-          console.log("asies")
-          console.log(this.mouse.x + '  ' + this.mouse.y)
-
           // Se actualiza la posición del v-card
           this.vCardPos.x = 100 * (1 - this.mouse.x) / 2
           this.vCardPos.y = 100 * (1 - this.mouse.y) / 2
-
-          console.log(this.vCardPos.x)
+          //parseFloat(result.infoData.max.toFixed(2))
+          this.popupCardInfo.posx = parseFloat((object.position.x / 3).toFixed(2))
+          this.popupCardInfo.posy = parseFloat((- object.position.z / 3).toFixed(2))
+          this.popupCardInfo.posz = parseFloat((object.position.y / 3).toFixed(2))
+          this.popupCardInfo.value = parseFloat((object.value).toFixed(2))
+          this.popupCardInfo.color = this.functions.convertColorToHexString([object.material.color.r, object.material.color.g, object.material.color.b])
 
           // Mostrar v-card
           this.vCardShow = true
-
         }
         else {
           this.vCardShow = false
         }
-
       }
       else{
         this.vCardShow = false
@@ -297,15 +313,6 @@ export default {
   beforeDestroy() {
     this.disposeApp();
   },
-
-  watch: {
-  app(newValue) {
-    console.log("Cambió")
-    if (newValue !== null && this.functions === null) {
-      this.functions = new Functions();
-    }
-  }
-},
 
 }
 

@@ -23,8 +23,8 @@ class Functions{
         this.map3DHumRange = this.configParams.map3DHumRange
 
         this.infoData={        
-            minText:'min t',
-            maxText:'max t'
+            minText:'min t:',
+            maxText:'max t:'
         }
 
     }
@@ -37,7 +37,6 @@ class Functions{
         this.raycaster.setFromCamera(this.mouse, this.app.camera)
       
         var isIntersected = this.raycaster.intersectObjects( this.app.scene.children );
-        console.log(isIntersected)
       
         if (isIntersected) {
       
@@ -79,6 +78,7 @@ class Functions{
                         // Se actualiza el color del mapa de calor
                         const color = self.convertColorToHex(result.planeResults[contador])
                         child.material.color.set(color)
+                        child.value = result.values[contador]
 
                         contador = contador + 1
 
@@ -127,7 +127,8 @@ class Functions{
                                 x: result.planePoints[i][0] + result.faceSideXLength / 2,
                                 y: - result.planePoints[i][1] - result.faceSideYLength / 2,
                                 z: result.planePoints[i][2]
-                            }
+                            },
+                            value: result.values[i]
                         }
                         this.createPlane(planeData, i)
                     }
@@ -161,7 +162,8 @@ class Functions{
                                 x: result.planePoints[i][0] + result.faceSideXLength / 2,
                                 y: - result.planePoints[i][1] - result.faceSideYLength / 2,
                                 z: result.planePoints[i][2]
-                            }
+                            },
+                            value: result.values[i]
                         }
                         this.createPlane(planeData, i)
                     }
@@ -236,8 +238,9 @@ class Functions{
 
         plane.position.set(planeData.position.x, planeData.position.z, planeData.position.y);
         plane.name = `Plane.${index}`
+        plane.value = planeData.value
 
-        this.app.scene.add( plane );
+        this.app.scene.children.push( plane );
     }
 
     // Función para borrar todos los planos de una escena
@@ -288,6 +291,9 @@ class Functions{
             }
             else if(array[i].length == 1){
                 array[i] = '0' + array[i]
+            }
+            else if (array[i].indexOf('.') != -1){
+                array[i] = '0' + array[i][0]
             }
             result = result + array[i]
         }
@@ -347,8 +353,6 @@ class Functions{
                     var oldPositions = []
     
                     var objectsToRemove = []
-    
-                    var indicesToUpdate = [];
 
                     self = this
                     // Se obtienen los elementos de la escena
@@ -366,6 +370,7 @@ class Functions{
                                 const indexToUpdate = newPositions.findIndex(arr => arr.every((value, index) => value === position[index]));
                                 const color = self.convertColorToHex(result.planeResults[indexToUpdate])
                                 child.material.color.set(color)
+                                child.value = result.values[indexToUpdate]
 
                               }
                             // ELIMINAR ELEMENTOS
@@ -401,7 +406,8 @@ class Functions{
                                     x: position[0],
                                     y: position[1],
                                     z: position[2]
-                                }
+                                },
+                                value: result.values[i]
                             }
                             this.createPlane(planeData, i)
                         }

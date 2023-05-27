@@ -82,7 +82,7 @@ class DittoRequest:
 
         if mode == "heatMap":
             #Se obtienen las interpolaciones para un plano en z determinado
-            planeResults, planePoints, faceSideXLength, faceSideYLength, infoData = self.interpolator.interpolatePlane(points = points, 
+            planeResults, planePoints, faceSideXLength, faceSideYLength, infoData, values = self.interpolator.interpolatePlane(points = points, 
                                                                     measurement = measurement,
                                                                     sideYPoints = sideYPoints,
                                                                     colorRange = colorRange,
@@ -93,12 +93,13 @@ class DittoRequest:
                     "planePoints": planePoints, 
                     "faceSideXLength": faceSideXLength, 
                     "faceSideYLength": faceSideYLength,
-                    "infoData": infoData}
+                    "infoData": infoData,
+                    "values": values.tolist()}
 
             return data
         
         elif mode == "3DMap":
-            planeResults, planePoints, faceSideXLength, faceSideYLength, infoData = self.interpolator.interpolate3D( points = points, 
+            planeResults, planePoints, faceSideXLength, faceSideYLength, infoData, values = self.interpolator.interpolate3D( points = points, 
                                                                   measurement = measurement,
                                                                   sideYPoints = sideYPoints,
                                                                   colorRange = colorRange,
@@ -109,7 +110,8 @@ class DittoRequest:
                     "planePoints": planePoints, 
                     "faceSideXLength": faceSideXLength, 
                     "faceSideYLength": faceSideYLength,
-                    "infoData": infoData}
+                    "infoData": infoData,
+                    "values": values}
 
             return data
     
