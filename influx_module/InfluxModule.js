@@ -32,6 +32,25 @@ class InfluxModule {
       ]
     });
 
+    this.influxConnectionMovement = new Influx.InfluxDB({
+      host: this.configParams.influxIP,
+      database: this.configParams.database,
+      schema: [
+        {
+          measurement: this.configParams.movementMeasurement,
+          fields:{
+            xVal: Influx.FieldType.FLOAT,
+            yVal: Influx.FieldType.FLOAT,
+            zVal: Influx.FieldType.FLOAT,
+            xAvg: Influx.FieldType.FLOAT,
+            yAvg: Influx.FieldType.FLOAT,
+            zAvg: Influx.FieldType.FLOAT
+          },
+          tags:[]
+        }
+      ]
+    })
+
     this.influxConnectionVibr = new Influx.InfluxDB({
       host: this.configParams.influxIP,
       database: this.configParams.database,
@@ -56,13 +75,19 @@ class InfluxModule {
   //Función para introducir un dato en la bbdd
   async insert(data) {
 
-    this.influxConnection.writePoints(data).catch(console.error);
+    this.influxConnection.writePoints(data).catch((error) =>console.log(error));
+
+  }
+
+  async insertIntoMovement(data){
+
+    this.influxConnectionMovement.writePoints(data).catch((error) => console.log(error))
 
   }
 
   async insertIntoVibr(data) {
 
-    this.influxConnectionVibr.writePoints(data).catch(console.error);
+    this.influxConnectionVibr.writePoints(data).catch((error) => console.log(error));
 
   }
 

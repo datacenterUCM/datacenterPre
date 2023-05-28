@@ -37,6 +37,21 @@ class LogicImpl {
                 //console.log(`${this.configParams.TAG} ${now.toLocaleString()} Dato introducido\n`)
             });
         }
+        // Se introduce el dato de movimieno en el apartado de medidas de movimiento
+        else if(topic == this.configParams.movementTopic){
+            const influxData = [{
+                measurement: this.configParams.movementMeasurement,
+                fields: {xVal: messageJson["xVal"], yVal: messageJson["yVal"],
+                zVal: messageJson["zVal"], xAvg: messageJson["xAvg"],
+                yAvg: messageJson["yAvg"], zAvg: messageJson["zAvg"]
+                }
+            }]
+
+            this.influx.insertIntoMovement(influxData).then(() => {
+                const now = new Date();
+                //console.log(`${this.configParams.TAG} ${now.toLocaleString()} Dato introducido\n`)
+            })
+        }
         // Se introduce el dato en el apartado de medidas de vibración
         else if (topic == this.configParams.vibrMeasTopic){
 
