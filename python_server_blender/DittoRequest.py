@@ -31,9 +31,10 @@ class DittoRequest:
 
         if response.status_code == 200:  # Si la respuesta es exitosa
             self.data = json.loads(response.text)  # Obtener los datos de la respuesta en formato JSON
-            print(self.logTag, "data received")  # Imprimir los datos obtenidos
+            #print(self.logTag, "data received")  # Imprimir los datos obtenidos
         else:
-            print("Error al hacer la petición GET")  # En caso de error, imprimir mensaje de error
+            #print("Error al hacer la petición GET")  # En caso de error, imprimir mensaje de error
+            pass
 
 
     def getPoints(features):
@@ -111,14 +112,7 @@ class DittoRequest:
                     "faceSideXLength": faceSideXLength, 
                     "faceSideYLength": faceSideYLength,
                     "infoData": infoData,
-                    "values": values}
+                    "values": values.tolist()}
 
             return data
     
-
-    def updateZ(self, blenderScene):
-        updateTimeInit = time.time()
-        tempResults, humResults, planePoints = self.getData(  )
-        blenderScene.updateScene( tempResults = tempResults )
-        print( "[MAIN] updateTime:", time.time() - updateTimeInit )
-        return 5

@@ -14,18 +14,18 @@ class Controller(BaseHTTPRequestHandler):
     def do_GET(self):
         # Endpoint para calcular los puntos de un plano. Recibe como parámetros el
         # valor de Z y la resolución
-        print("PATH: ", self.path)
+        #print("PATH: ", self.path)
 
         self.pathWhithNoParams = self.path[:self.path.index('?')]
 
-        print("PATH WITH NO PARAMS:", self.pathWhithNoParams)
+        #print("PATH WITH NO PARAMS:", self.pathWhithNoParams)
 
         if self.pathWhithNoParams == '/getPlanePoints':
             # Obtener los parámetros de la URL
             parsed_url = urlparse(self.path)
             query_params = parse_qs(parsed_url.query)
 
-            print(query_params)
+            #print(query_params)
 
             zVal = float(query_params.get('zVal', [''])[0])
             sideYPoints = int(query_params.get('sideYPoints', [''])[0])
@@ -35,7 +35,7 @@ class Controller(BaseHTTPRequestHandler):
             colorRange = colorRange.split(',')
             colorRange = list( map( lambda color : int(color), colorRange ) ) 
             mode = "heatMap"
-            print(zVal, sideYPoints, measurement, colorRange)
+            #print(zVal, sideYPoints, measurement, colorRange)
 
             data = self.dittoRequest.getData(zVal, sideYPoints, measurement, colorRange, mode, None)
 
@@ -49,12 +49,14 @@ class Controller(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(dataJson.encode('utf-8'))
 
+            #print("ENVIADO")
+
         elif self.pathWhithNoParams == '/get3DPoints':
             # Obtener los parámetros de la URL
             parsed_url = urlparse(self.path)
             query_params = parse_qs(parsed_url.query)
 
-            print(query_params)
+            #print(query_params)
 
             sideYPoints = int(query_params.get('sideYPoints', [''])[0])
             measurement = query_params.get('measurement', [''])[0]
@@ -68,7 +70,7 @@ class Controller(BaseHTTPRequestHandler):
             searchRange = list( map( lambda value : float(value), searchRange ) ) 
 
             mode = "3DMap"
-            print(sideYPoints, measurement, colorRange, searchRange)
+            #print(sideYPoints, measurement, colorRange, searchRange)
 
             data = self.dittoRequest.getData(None, sideYPoints, measurement, colorRange, mode, searchRange)
 
@@ -82,7 +84,7 @@ class Controller(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(dataJson.encode('utf-8'))
         else:
-            print("self.path:", self.path)
+            #print("self.path:", self.path)
             # Enviar una respuesta de error si la ruta no coincide
             self.send_response(404)
             self.send_header('Content-type', 'text/html')

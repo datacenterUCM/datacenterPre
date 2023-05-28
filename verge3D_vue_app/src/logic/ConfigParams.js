@@ -3,8 +3,10 @@ class ConfigParams{
     constructor(){
 
         // Url del servidor de python
-        //this.serverUrl = 'http://192.168.1.44:8085'
-        this.serverUrl = 'http://localhost:8085'
+        //this.serverUrl = 'http://192.168.1.41:8085'
+        //this.serverUrl = 'http://172.17.0.3:8085'
+        this.serverUrl = 'http://81.34.233.47:8085'
+        //this.serverUrl = 'http://localhost:8085'
 
         // Paths del servidor
         this.getPlanePointsPath = '/getPlanePoints'
@@ -51,7 +53,7 @@ class ConfigParams{
 
         // El rango inicial de temperaturas y humedades que se muestra en el mapa de calor 3D
         this.map3DTempRange = [ 25, 26 ]
-        this.map3DHumRange = [ 25, 26 ]
+        this.map3DHumRange = [ 38, 39 ]
 
         // Measurement inicial el cual se muestra en los mapas de calor
         this.measurement = "temp"

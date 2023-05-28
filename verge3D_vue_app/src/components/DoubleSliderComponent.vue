@@ -76,10 +76,7 @@
 
         props: {
             title: '',
-            step: {
-                type: Number,
-                default: 1
-            }
+            step: {type: Number,default: 1}
         },
 
         data(){

@@ -28,37 +28,6 @@ class Interpolator:
         self.cmap = cm.get_cmap('jet')
         self.configParams = ConfigParams()
 
-    # Setter para las variables de clase
-
-    def setClassVariables(self, sideYPoints, sideXLength, sideYLength, xBoundary, yBoundary, zBoundary):
-        Interpolator.sideXLength = sideXLength
-        Interpolator.sideYLength = sideYLength
-        Interpolator.xBoundary = xBoundary
-        Interpolator.yBoundary = yBoundary
-        Interpolator.zBoundary = zBoundary
-        Interpolator.sideYPoints = sideYPoints
-        # El número de puntos del eje X se saca a partir de los de Y
-        Interpolator.sideXPoints = round(
-            (sideXLength / sideYLength) * sideYPoints)
-        Interpolator.sideZPoints = round(
-            (Interpolator.configParams.sideZLength / Interpolator.sideYLength) * sideYPoints)
-
-    # Setter para los puntos de cada lado (para cambiar la resolución del mapa)
-    def setSidePoints(self, sideYPoints):
-        Interpolator.sideYPoints = sideYPoints
-        Interpolator.sideXPoints = round(
-            (Interpolator.sideXLength / Interpolator.sideYLength) * sideYPoints)
-        Interpolator.sideZPoints = round(
-            (Interpolator.configParams.sideZLength / Interpolator.sideYLength) * sideYPoints)
-        
-    # Setter para modificar la medida (temperatura o humedad)
-    def setMeasurement( self, measurement ):
-        Interpolator.measurement = measurement
-
-    # Setter para modificar el modo (3D o mapa de calor plano)
-    def setMode(self, mode):
-        Interpolator.mode = mode
-
     # Función para interpolar un punto. values contiene los valores de temperatura y humedad medidos por cada nodo,
     # points contiene las localizaciones de los sensores y request contiene el punto a interpolar
     def interpolatePoints(self, points, values, request):
@@ -109,39 +78,36 @@ class Interpolator:
         grid = np.vstack(np.meshgrid(x, y)).reshape(2, -1).T.tolist()
 
         # Se agrega la dimensión z al grid
-        list(map(lambda e: e.append(zVal), grid))
+        grid = [point + [zVal] for point in grid]
 
         # Se obtienen las interpolaciones de todos los puntos
         resultValues = self.interpolatePoints(points, values, grid)
 
         if measurement == "temp":
-            resultValues = resultValues[:,0] # Lista de temperaturas interpoladas
+            resultValues = resultValues[:, 0]  # Lista de temperaturas interpoladas
         elif measurement == "hum":
-            resultValues = resultValues[:,1] # Lista de humedades interpoladas
+            resultValues = resultValues[:, 1]  # Lista de humedades interpoladas
 
         # Se obtiene la escala de color de cada punto:
-        normValues = self.normalizeValues( resultValues, colorRange )
-
+        normValues = self.normalizeValues(resultValues, colorRange)
         colors = self.cmap(normValues)
 
         # Se obtienen los valores maximos y minimos de temperatura y humedad
-        try:
-            maxVal = max(resultValues)
-            minVal = min(resultValues)
-        except ValueError:
-            minVal = 0
-            maxVal = 0
-        infoData= {
-            'max': maxVal, 
+        minVal = np.min(resultValues) if len(resultValues) > 0 else 0
+        maxVal = np.max(resultValues) if len(resultValues) > 0 else 0
+
+        infoData = {
+            'max': maxVal,
             'min': minVal,
-            'maxColor': self.cmap( self.normalizeValues([maxVal], colorRange) )[0].tolist(),
-            'minColor': self.cmap( self.normalizeValues([minVal], colorRange) )[0].tolist()
-            }
+            'maxColor': self.cmap(self.normalizeValues([maxVal], colorRange))[0].tolist(),
+            'minColor': self.cmap(self.normalizeValues([minVal], colorRange))[0].tolist()
+        }
 
         faceSideXLength = xLastPoint / (sideXPoints - 1)
         faceSideYLength = yLastPoint / (sideYPoints - 1)
 
         return colors, grid, faceSideXLength, faceSideYLength, infoData, resultValues
+
 
     # Esta función interpola todos los puntos del interior de la sala, no sólo de un plano.
     def interpolate3D(self, points, measurement, sideYPoints, colorRange, values, searchRange):
@@ -152,67 +118,57 @@ class Interpolator:
         # de los límites de las paredes)
         xLastPoint, yLastPoint, zLastPoint = self.getLastPoints(sideXPoints, sideYPoints, sideZPoints)
 
-        # Crear tres vectores de coordenadas X Y Z
-        # np.linspace crea un array de puntos equidistantes dado un inicio, un fin y un número de puntos
+        # Crear los vectores de coordenadas X, Y, Z utilizando np.linspace para generar puntos equidistantes
         x = np.linspace(start=0, stop=xLastPoint, num=sideXPoints)
         y = np.linspace(start=0, stop=yLastPoint, num=sideYPoints)
         z = np.linspace(start=0, stop=zLastPoint, num=sideZPoints)
 
-        # Crear el grid 3D con meshgrid
-        grid3D_x, grid3D_y, grid3D_z = np.meshgrid(x, y, z)
-        # Apilar filas en el grid 3D
+        # Crear el grid 3D utilizando np.mgrid para generar una rejilla de puntos en los tres ejes
+        grid3D_x, grid3D_y, grid3D_z = np.mgrid[0:xLastPoint:complex(0, sideXPoints),
+                                                0:yLastPoint:complex(0, sideYPoints),
+                                                0:zLastPoint:complex(0, sideZPoints)]
+
+        # Apilar filas en el grid 3D para obtener una matriz de puntos en el espacio 3D
         grid3D = np.vstack((grid3D_x.ravel(), grid3D_y.ravel(), grid3D_z.ravel())).T
 
         # Se obtienen las interpolaciones de todos los puntos
-        resultValues = self.interpolatePoints(points, values,  grid3D)
+        resultValues = self.interpolatePoints(points, values, grid3D)
 
-        allTempResults = resultValues[:,0] # Lista de temperaturas interpoladas
-        allHumResults = resultValues[:,1] # Lista de humedades interpoladas
+        # Obtener los resultados de temperatura y humedad interpolados
+        allTempResults = resultValues[:, 0]
+        allHumResults = resultValues[:, 1]
 
-        tempResults = []
-        humResults = []
-        points3D = []
-        results = []
+        # Filtrar los resultados dentro del rango de búsqueda dependiendo de la medida
+        if measurement == "temp":
+            valid_indices = np.where((searchRange[0] <= allTempResults) & (allTempResults <= searchRange[1]))
+            results = allTempResults[valid_indices]
+            points3D = grid3D[valid_indices].tolist()
+        elif measurement == "hum":
+            valid_indices = np.where((searchRange[0] <= allHumResults) & (allHumResults <= searchRange[1]))
+            results = allHumResults[valid_indices]
+            points3D = grid3D[valid_indices].tolist()
 
-        # Se obtienen las temperaturas y humedades que están en el rango especificado
-        for i in range(len(grid3D)):
-
-            if measurement == "temp":
-                if(searchRange[0] <= allTempResults[i] <= searchRange[1]):
-                    results.append( allTempResults[i] )
-                    points3D.append( grid3D[i].tolist() )
-
-            elif measurement == "hum":
-                if(searchRange[0] <= allHumResults[i] <= searchRange[1]):
-                    results.append( allHumResults[i] )
-                    points3D.append( grid3D[i].tolist() )
-
-        # Se obtiene la escala de color de cada punto:
-        normValues = self.normalizeValues( results, colorRange )
-
+        # Obtener la escala de color de cada punto
+        normValues = self.normalizeValues(results, colorRange)
         colors = self.cmap(normValues)
 
-        # Se obtienen los valores maximos y minimos de temperatura y humedad
-        try:
-            maxVal = max(results)
-            minVal = min(results)
-        except ValueError:
-            minVal = 0
-            maxVal = 0
+        # Obtener los valores máximos y mínimos de temperatura y humedad
+        minVal = np.min(results) if len(results) > 0 else 0
+        maxVal = np.max(results) if len(results) > 0 else 0
 
-        infoData= {
-            'max': maxVal, 
+        # Crear el diccionario de información
+        infoData = {
+            'max': maxVal,
             'min': minVal,
-            'maxColor': self.cmap( self.normalizeValues([maxVal], colorRange) )[0].tolist(),
-            'minColor': self.cmap( self.normalizeValues([minVal], colorRange) )[0].tolist()
-            }
+            'maxColor': self.cmap(self.normalizeValues([maxVal], colorRange))[0].tolist(),
+            'minColor': self.cmap(self.normalizeValues([minVal], colorRange))[0].tolist()
+        }
 
+        # Calcular las longitudes de los lados de la sala
         faceSideXLength = xLastPoint / (sideXPoints - 1)
         faceSideYLength = yLastPoint / (sideYPoints - 1)
 
         return colors, points3D, faceSideXLength, faceSideYLength, infoData, results
-
-
 
     def normalizeValues(self, results, colorRange):
 

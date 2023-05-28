@@ -41,6 +41,11 @@
     :right="vCardPos.x"
     ></PopupCard>
 
+    <LoadSpinner
+    :dialogLoadSpinner="loading"
+    :message="loadingMessage">
+    </LoadSpinner>
+
     </div>
 
 </template>
@@ -52,6 +57,7 @@ import HideButtonComponent from '@/components/UserInterfaceComponent.vue'
 import InfoComponent from '@/components/InfoComponent.vue'
 import SimpleInfoComponent from '@/components/SimpleInfoComponent.vue'
 import PopupCard from '@/components/PopupCard.vue'
+import LoadSpinner from '@/components/LoadSpinner.vue'
 import { v4 as uuidv4 } from 'uuid';
 const { Functions } = require('@/logic/functions');
 const { ConfigParams } = require('@/logic/ConfigParams')
@@ -88,7 +94,13 @@ export default {
         color: '#aaaaaa',
         text: 'temp:',
         unit: 'ºC'
-      }
+      },
+
+      loadingMessage: 'Cargando',
+      loading:false,
+
+      // Esta variable se usa para indicar cuándo se está realizando una actualización automática
+      updateInProgress: false
     }
   },
 
@@ -97,12 +109,14 @@ export default {
     HideButtonComponent,
     InfoComponent,
     SimpleInfoComponent,
-    PopupCard
+    PopupCard,
+    LoadSpinner
 },
 
   methods:{
 
     createScene(){
+      this.spinnerOn()
       this.configParams = new ConfigParams()
 
       this.functions = new Functions(this.app)
@@ -111,74 +125,114 @@ export default {
 
       this.$refs.userInterface.sceneCreated()
 
+      this.spinnerOff()
+
       //Timer para actualizar la información periodicamente
       setInterval(() => {
-        this.functions.updateScene(this.functions.app).then((result) => {
-          this.infoData = result
-        })
+        if(this.loading == false){
+          this.updateInProgress = true
+          this.functions.updateScene(this.functions.app).then((result) => {
+            this.infoData = result
+            this.updateInProgress = false
+          })
+        }
       }, 10000)
       })
         .catch((error) => {
           console.log(error)
+          this.spinnerOff()
       })
     },
     // Función que ejecuta el evento "updateZEvent" que emite el hijo.
     updateZ(value){
-      this.configParams.zValue = value
-      this.functions.zValue = value
-      this.functions.updateZ(value)
-      this.infoData = this.functions.infoData
+      this.spinnerOn()
+      this.waitUntilUpdate().then(() => {
+        this.configParams.zValue = value
+        this.functions.zValue = value
+        this.functions.updateZ(value).then((resolve, reject) => {
+          this.infoData = this.functions.infoData
+          this.spinnerOff()
+        }).catch((error) => {
+          console.log(error)
+          this.spinnerOff()
+        })
+      })      
     },
     // Función que ejecuta el evento "changeModeEvent" que emite el hijo.
     changeMode(){
-      this.functions.changeMode(this.configParams.mode).then((result) => {
-        this.infoData = result
-      }).catch((error) => {
-        console.log(error)
-      })
+      this.spinnerOn()
+      this.waitUntilUpdate().then(() => {
 
-      if (this.configParams.mode == "heatMap"){
-        this.configParams.mode = "3DMap"
-        this.$refs.userInterface.changeModeButtonName("Cambiar a mapa plano")
-      }
-      else if (this.configParams.mode == "3DMap"){
-        this.configParams.mode = "heatMap"
-        this.$refs.userInterface.changeModeButtonName("Cambiar a mapa 3D")
-      }
+        this.functions.changeMode(this.configParams.mode).then((result) => {
+          this.infoData = result
+          this.spinnerOff()
+        }).catch((error) => {
+          console.log(error)
+          this.spinnerOff()
+        })
+
+        if (this.configParams.mode == "heatMap"){
+          this.configParams.mode = "3DMap"
+          this.$refs.userInterface.changeModeButtonName("Cambiar a mapa plano")
+        }
+        else if (this.configParams.mode == "3DMap"){
+          this.configParams.mode = "heatMap"
+          this.$refs.userInterface.changeModeButtonName("Cambiar a mapa 3D")
+        }
+
+      })
         
     },
     changeMeasurement(){
-      this.functions.changeMeasurement().then((result) => {
-        this.infoData = result
-      }).catch((error) => {
-        console.log(error)
+      this.spinnerOn()
+      var a = true
+      this.waitUntilUpdate().then(() => {
+
+        this.functions.changeMeasurement().then((result) => {
+          this.infoData = result
+          this.spinnerOff()
+        }).catch((error) => {
+          console.log(error)
+          this.spinnerOff()
+        })
+        
+        if (this.configParams.measurement == "temp"){
+          this.configParams.measurement = "hum"
+          this.$refs.userInterface.changeMeasurementButtonName("Mostrar temperatura")
+          this.infoData.minText = "min h:"
+          this.infoData.maxText = "max h:"
+          this.popupCardInfo.text = 'hum:'
+          this.popupCardInfo.unit = '%'
+        }
+        else if (this.configParams.measurement == "hum"){
+          this.configParams.measurement = "temp"
+          this.$refs.userInterface.changeMeasurementButtonName("Mostrar humedad")
+          this.infoData.minText = "min t:"
+          this.infoData.maxText = "max t:"
+          this.popupCardInfo.text = 'temp:'
+          this.popupCardInfo.unit = 'ºC'
+        }
+
       })
-      
-      if (this.configParams.measurement == "temp"){
-        this.configParams.measurement = "hum"
-        this.$refs.userInterface.changeMeasurementButtonName("Mostrar temperatura")
-        this.infoData.minText = "min h:"
-        this.infoData.maxText = "max h:"
-        this.popupCardInfo.text = 'hum:'
-        this.popupCardInfo.unit = '%'
-      }
-      else if (this.configParams.measurement == "hum"){
-        this.configParams.measurement = "temp"
-        this.$refs.userInterface.changeMeasurementButtonName("Mostrar humedad")
-        this.infoData.minText = "min t:"
-        this.infoData.maxText = "max t:"
-        this.popupCardInfo.text = 'temp:'
-        this.popupCardInfo.unit = 'ºC'
-      }
     },
     // Función que ejecuta el evento "changeResolutionEvent" que emite el hijo
     changeResolution(value){
       if(value != this.configParams.sideYPoints){
-        this.configParams.sideYPoints = value
-        this.functions.sideYPoints = value
+        this.spinnerOn()
+        this.waitUntilUpdate().then(() => {
 
-        this.functions.deleteScene()
-        this.functions.changeResolution()
+          this.configParams.sideYPoints = value
+          this.functions.sideYPoints = value
+
+          this.functions.deleteScene()
+          this.functions.changeResolution().then(() => {
+            this.spinnerOff()
+          }).catch((error) => {
+            console.log(error)
+            this.spinnerOf()
+          })
+
+        })
       }
     },
     // Función para ocultar/mostrar la UI
@@ -204,10 +258,15 @@ export default {
     },
     // Función para alicar los cambios del rango de temperatura y humedad
     applyRange(){
-      this.functions.updateScene(this.functions.app).then((result) => {
-        this.infoData = result
-      }).catch((error) => {
-        console.log(error)
+      this.spinnerOn()
+      this.waitUntilUpdate().then(() => {
+        this.functions.updateScene(this.functions.app).then((result) => {
+          this.infoData = result
+          this.spinnerOff()
+        }).catch((error) => {
+          console.log(error)
+          this.spinnerOff()
+        })
       })
     },
     // Función para cambiar el rango de color de la temperatura
@@ -220,10 +279,34 @@ export default {
     },
     // Función para aplicar los cambios del rango de colores
     applyColorRange(){
-      this.functions.updateScene(this.functions.app).then((result) => {
-        this.infoData = result
-      }).catch((error) => {
-        console.log(error)
+      this.spinnerOn()
+      this.waitUntilUpdate().then(() => {
+        this.functions.updateScene(this.functions.app).then((result) => {
+          this.infoData = result
+          this.spinnerOff()
+        }).catch((error) => {
+          console.log(error)
+          this.spinnerOff()
+        })
+      })
+    },
+    spinnerOn(){
+      this.loading=true
+    },
+    spinnerOff(){
+      this.loading=false
+    },
+
+    // Esta función sirve para evitar realizar cualquier accion mientras hay una actualización en curso y evitar comportamientos impredecibles
+
+    waitUntilUpdate(){
+      return new Promise((resolve, reject) => {
+        let timerID = setInterval( () => {
+          if(this.updateInProgress == false){
+            clearInterval(timerID)
+            resolve()
+          }
+        }, 100)
       })
     }
 

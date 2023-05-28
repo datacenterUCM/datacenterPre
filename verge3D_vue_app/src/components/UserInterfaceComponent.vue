@@ -167,7 +167,7 @@ export default {
 
             // Valores máximos y mínimos de resolución
             minResValue: 10,
-            maxResValue: 35,
+            maxResValue: 25,
 
             modeButtonText: "Cambiar a mapa 3D",
 

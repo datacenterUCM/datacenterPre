@@ -60,7 +60,7 @@ class Functions{
             }
 
             this.requests.getPlanePoints(zVal, this.sideYPoints, this.measurement, colorRange).then(result =>{
-                console.log(result)
+                //console.log(result)
 
                 var contador = 0
 
@@ -112,7 +112,7 @@ class Functions{
                     this.infoData.minColor = this.convertColorToHexString(result.infoData.minColor)
                     this.infoData.maxColor = this.convertColorToHexString(result.infoData.maxColor)
 
-                    console.log(result)
+                    //console.log(result)
                     for (var i=0; i<result.planeResults.length; i++){
                     
                         // Dar formato RGB al color
@@ -147,7 +147,7 @@ class Functions{
                     this.infoData.minColor = this.convertColorToHexString(result.infoData.minColor)
                     this.infoData.maxColor = this.convertColorToHexString(result.infoData.maxColor)
 
-                    console.log(result)
+                    //console.log(result)
                     for (var i=0; i<result.planeResults.length; i++){
                     
                         // Dar formato RGB al color
@@ -303,20 +303,26 @@ class Functions{
 
     // Funcion para cambiar la resolución
     changeResolution(){
+        return new Promise((resolve, reject) => {
 
-        var colorRange = null
-        var searchRange = null
-        if(this.measurement == "temp"){
-            colorRange = this.tempColorRange
-            searchRange = this.map3DTempRange
-        }
-        else{
-            colorRange = this.humColorRange
-            searchRange = this.map3DHumRange
-        }
+            var colorRange = null
+            var searchRange = null
+            if(this.measurement == "temp"){
+                colorRange = this.tempColorRange
+                searchRange = this.map3DTempRange
+            }
+            else{
+                colorRange = this.humColorRange
+                searchRange = this.map3DHumRange
+            }
 
-        this.createScene(this.zValue, this.sideYPoints, this.measurement, colorRange, searchRange)
+            this.createScene(this.zValue, this.sideYPoints, this.measurement, colorRange, searchRange).then(() => {
+                resolve()
+            }).catch((error) => {
+                reject(error)
+            })
 
+        })
     }
 
     //Función que peticiona datos al back, CREA los elementos que faltan, BORRA los que no coinciden y ACTUALIZA los que si coinciden
@@ -338,7 +344,7 @@ class Functions{
                 // Se hace un fetch para obtener los datos
                 this.requests.get3DPoints(this.sideYPoints, this.measurement, colorRange, searchRange).then(result => {
 
-                    console.log(result)
+                    //console.log(result)
     
                     var newPositions = []
                     // Primero es necesario modificar la posición de los elementos recibidos
@@ -366,7 +372,7 @@ class Functions{
                             if (newPositions.some(value => value.every((elem, index) => elem === position[index]))) {
                                 oldPositions.push(position)
     
-                                // Se averigual el índice del elemento recibido para obtener su color
+                                // Se averigua el índice del elemento recibido para obtener su color
                                 const indexToUpdate = newPositions.findIndex(arr => arr.every((value, index) => value === position[index]));
                                 const color = self.convertColorToHex(result.planeResults[indexToUpdate])
                                 child.material.color.set(color)
