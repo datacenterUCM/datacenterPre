@@ -5,8 +5,9 @@ class ConfigParams{
         // Url del servidor de python
         //this.serverUrl = 'http://192.168.1.41:8085'
         //this.serverUrl = 'http://172.17.0.3:8085'
-        this.serverUrl = 'http://81.34.233.47:8085'
+        //this.serverUrl = 'http://81.34.233.47:8085'
         //this.serverUrl = 'http://localhost:8085'
+        this.serverUrl = 'http://147.96.81.123:8085'
 
         // Paths del servidor
         this.getPlanePointsPath = '/getPlanePoints'

@@ -8,13 +8,14 @@ class ConfigParams:
         self.port = 8085
         
         #self.dittoUrl = 'http://147.96.81.123:8080/api/2/things/org.eclipse.ditto:datacentertwin'
+        self.dittoUrl = 'http://localhost:8080/api/2/things/org.eclipse.ditto:datacentertwin'
         #self.dittoUrl = 'http://localhost:8080/api/2/things/org.eclipse.ditto:sergio-room-v2'
-        self.dittoUrl = 'http://81.34.233.47:8080/api/2/things/org.eclipse.ditto:sergio-room-v2'
+        #self.dittoUrl = 'http://81.34.233.47:8080/api/2/things/org.eclipse.ditto:sergio-room-v2'
 
-        #self.dittoUser = 'datacenter'
-        self.dittoUser = 'sergio'
-        #self.dittoPass = 'esp32twin'
-        self.dittoPass = 'sergiotfm'
+        self.dittoUser = 'datacenter'
+        #self.dittoUser = 'sergio'
+        self.dittoPass = 'esp32twin'
+        #self.dittoPass = 'sergiotfm'
 
         # Longitud de los lados de la sala
         self.sideXLength = 3 * 7.26
