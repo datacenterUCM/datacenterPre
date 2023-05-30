@@ -1,0 +1,9 @@
+version: '3'
+services:
+  python_server_container: #Nombre del nuevo contenedor que se va a crear
+    image: python_server_image
+    ports:
+      - 8085:8085 # Se indican los puertos
+    mem_limit: 70m # Límite de memoria
+    restart: always #Se indica que el contenedor se tiene que ejecutar al iniciar el equipo
+    # Otros ajustes y configuraciones para el contenedor
