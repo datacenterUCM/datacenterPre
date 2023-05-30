@@ -13,7 +13,6 @@ class LogicImpl {
 
     // Función que se ejecuta cuando llega un mensaje vía mqtt
     checkMsg(message, topic) {
-        console.log("Mensaje recibido")
 
         const messageJson = JSON.parse(message);
         //console.log(this.configParams.TAG + " Mensaje recibido en el tópico " + topic);
