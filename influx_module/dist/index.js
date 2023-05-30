@@ -21,8 +21,8 @@ class ConfigParams{
         // Variable para indicar si se van a guardar los valores de las vibraciones en bbdd o no.
         //this.measureVibrations = true;
 
-        //this.brokerIP = '10.42.0.1';
-        this.brokerIP = '147.96.81.123';
+        this.brokerIP = '10.42.0.1';
+        //this.brokerIP = '147.96.81.123';
 	    //this.brokerIP = '192.168.1.41';
         
         this.dittoTopic = 'eclipse-ditto-sandbox/org.eclipse.ditto:datacentertwin/things/twin/commands/modify';
@@ -35,7 +35,7 @@ class ConfigParams{
 
         // Esta lista contiene las localizaciones de los nodos.
         // La posición 0 de la lista se corresponde con el nodo 1.
-        this.nodeLocations = [{x:0, y:0, z:0},
+        /*this.nodeLocations = [{x:0, y:0, z:0},
                             {x:1, y:1, z:1},
                             {x:1, y:1, z:1},
                             {x:1, y:1, z:1},
@@ -43,7 +43,7 @@ class ConfigParams{
                             {x:1, y:1, z:1},
                             {x:1, y:1, z:1},
                             {x:1, y:1, z:1},
-                            {x:9, y:1, z:1}]
+                            {x:9, y:1, z:1}]*/
     }
 
 }
@@ -82,9 +82,7 @@ class InfluxModule {
             hum: Influx.FieldType.FLOAT
           },
           tags: [
-            'x',
-            'y',
-            'z',
+            'node',
           ]
         }
       ]
@@ -173,7 +171,6 @@ class LogicImpl {
 
     // Función que se ejecuta cuando llega un mensaje vía mqtt
     checkMsg(message, topic) {
-        console.log("Mensaje recibido")
 
         const messageJson = JSON.parse(message);
         //console.log(this.configParams.TAG + " Mensaje recibido en el tópico " + topic);
@@ -181,7 +178,7 @@ class LogicImpl {
         const node = messageJson["node"];
 
         // La localización del nodo se almacena en la clase ConfigParams
-        const nodeLocation = this.configParams.nodeLocations[node - 1];
+        //const nodeLocation = this.configParams.nodeLocations[node - 1];
 
         // Se introduce el dato en el apartado de medidas de temp/hum
         if (topic == this.configParams.dittoTopic) {
@@ -189,7 +186,8 @@ class LogicImpl {
             // en el módulo de influx
             const influxData = [{
                 measurement: this.configParams.measurement,
-                tags: { x: nodeLocation["x"], y: nodeLocation["y"], z: nodeLocation["z"] },
+                //tags: { x: nodeLocation["x"], y: nodeLocation["y"], z: nodeLocation["z"] },
+                tags: { node: node },
                 fields: { temp: messageJson["temp"], hum: messageJson["hum"] }
             }];
 
@@ -22265,8 +22263,6 @@ var __webpack_exports__ = {};
 const { ConfigParams } = __nccwpck_require__(6528);
 const { MqttModule } = __nccwpck_require__(2560);
 const { LogicImpl } = __nccwpck_require__(5015);
-
-console.log("iniciando...")
 
 logicImpl = new LogicImpl()
 
