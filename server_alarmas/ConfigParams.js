@@ -23,6 +23,7 @@ class ConfigParams {
         //Url del broker
         //this.brokerIP = process.env.IP_BROKER; //192.168.4.1 por defecto
         this.brokerIP = "10.42.0.1";
+        //this.brokerIP = "192.168.1.41"
 
         //Tópico correspondiente a ditto. El módulo de alarmas debe escuchar en este tópico para poder analizar las posibles alarmas.
         this.dittoTopic = 'eclipse-ditto-sandbox/org.eclipse.ditto:datacentertwin/things/twin/commands/modify';

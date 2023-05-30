@@ -7,9 +7,9 @@
                 INTERFAZ DE USUARIO
             </h2>
 
-            <v-row class="mt-4 mb-4 d-flex justify-center" v-if="!createdScene"> 
+            <v-row class="mt-4 mb-4 d-flex justify-center" v-if="!createdSceneFlag"> 
                     <v-btn
-                    :disabled="createdScene"
+                    :disabled="createdSceneFlag"
                     rounded
                     color="primary"
                     dark
@@ -21,7 +21,7 @@
             <!-- Botón para cambiar la medida (temperatura o humedad) -->
             <!-- mb- significa "margin bottom" y mt- significa "margin top" -->
             <!-- Se usa d-flex y justify-center para centrar el botón con respecto al div-->
-             <v-row class="mt-4 mb-4 d-flex justify-center"> 
+             <v-row class="mt-4 mb-4 d-flex justify-center" v-if="createdSceneFlag"> 
                     <v-btn
                     rounded
                     color="primary"
@@ -32,14 +32,14 @@
                     </v-btn>
             </v-row>
             <!-- Slider para cambiar el valor de Z -->
-            <v-row class="mb-4">
+            <v-row class="mb-4" v-if="createdSceneFlag">
                 <v-card class="card-full-width">
                     <v-card-text style="font-size: 15px;">
                         Altura del plano
                     </v-card-text>
                     <v-slider
                         thumb-label
-                        :disabled="disableZ"
+                        :disabled="disableZFlag"
                         @change="updateZ"
                         v-model="zVal"
                         :min="minZValue"
@@ -48,7 +48,7 @@
                     >
                         <template v-slot:append>
                             <v-text-field
-                            :disabled="disableZ"
+                            :disabled="disableZFlag"
                             v-model="zVal"
                             @change="updateZ"
                             class="mt-0 pt-0"
@@ -61,7 +61,7 @@
                 </v-card>
             </v-row>
             <!-- Slider para modificar la resolución -->
-            <v-row class="mb-4">
+            <v-row class="mb-4" v-if="createdSceneFlag">
                 <v-card class="card-full-width">
                     <v-card-text style="font-size: 15px;">
                         Resolución
@@ -88,7 +88,7 @@
                 </v-card>
             </v-row>
             <!-- Botón para cambiar el modo (mapa3D o plano) -->
-            <v-row class="mb-4 d-flex justify-center">
+            <v-row class="mb-4 d-flex justify-center" v-if="createdSceneFlag">
                     <v-btn
                     rounded
                     color="primary"
@@ -99,25 +99,25 @@
                     </v-btn>
             </v-row>
             <!-- Sliders para cambiar los límites de temperatura y humedad para el mapa3D -->
-            <v-row class="mb-4 d-flex justify-center">
+            <v-row class="mb-4 d-flex justify-center" v-if="createdSceneFlag && (!heatMapFlag && tempOnFlag)">
                 <DoubleSliderComponent :title="'Rangos de temperatura para el mapa 3D'"
                                         :step="0.1"
                                         @applyRangeEvent="applyRangeTemp"
                                         ></DoubleSliderComponent>
             </v-row>
-            <v-row class="mb-4 d-flex justify-center">
+            <v-row class="mb-4 d-flex justify-center" v-if="createdSceneFlag && (!heatMapFlag && !tempOnFlag)">
                 <DoubleSliderComponent :title="'Rangos de humedad para el mapa 3D'"
                                         :step="0.1"
                                         @applyRangeEvent="applyRangeHum"
                                         ></DoubleSliderComponent>
             </v-row>
-            <v-row class="mb-4 d-flex justify-center">
+            <v-row class="mb-4 d-flex justify-center" v-if="createdSceneFlag && (tempOnFlag)">
                 <DoubleSliderComponent :title="'Rangos de color de temperatura'"
                                         :step="1"
                                         @applyRangeEvent="applyColorTemp"
                                         ></DoubleSliderComponent>
             </v-row>
-            <v-row class="mb-4 d-flex justify-center">
+            <v-row class="mb-4 d-flex justify-center" v-if="createdSceneFlag && (!tempOnFlag)">
                 <DoubleSliderComponent :title="'Rangos de color de humedad'"
                                         :step="1"
                                         @applyRangeEvent="applyColorHum"
@@ -179,11 +179,17 @@ export default {
 
             zVal: 2.25,
             resVal: 15,
-            
+            ///////////////////////////////////
+            //FLAGS
+            ///////////////////////////////////
             // Varible para habilitar/deshabilitar la actualización de z
-            disableZ: false,
-
-            createdScene: false
+            disableZFlag: false,
+            // Variable para deshabilitar la interfaz cuando aún no se ha creado el mapa
+            createdSceneFlag: false,
+            // Variable para habilitar sólo las funciones del mapa plano
+            heatMapFlag: true,
+            // Variable para habilitar sólo las funciones de la temperatura
+            tempOnFlag: true
         }
     },
 
@@ -192,18 +198,20 @@ export default {
             this.$emit('createSceneEvent')
         },
         sceneCreated(){
-            this.createdScene = true
+            this.createdSceneFlag = true
         },
         updateZ(value){
             //Se emite un evento que ejecutará el padre para actualizar la Z
             this.$emit('updateZEvent', value * 3)
         },
         changeMode(){
-            this.disableZ = !this.disableZ
+            this.disableZFlag = !this.disableZFlag
             this.$emit('changeModeEvent')
+            this.heatMapFlag = !this.heatMapFlag
         },
         changeMeasurement(){
             this.$emit('changeMeasurementEvent')
+            this.tempOnFlag = !this.tempOnFlag
         },
         //Función que ejecuta el padre para modificar el texto del botón de mode
         changeModeButtonName(newName){

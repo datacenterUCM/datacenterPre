@@ -99,8 +99,8 @@ export default {
       loadingMessage: 'Cargando',
       loading:false,
 
-      // Esta variable se usa para indicar cuándo se está realizando una actualización automática
-      updateInProgress: false
+      // Este flag se usa para indicar cuándo se está realizando una actualización automática
+      updateInProgressFlag: false
     }
   },
 
@@ -130,10 +130,10 @@ export default {
       //Timer para actualizar la información periodicamente
       setInterval(() => {
         if(this.loading == false){
-          this.updateInProgress = true
+          this.updateInProgressFlag = true
           this.functions.updateScene(this.functions.app).then((result) => {
             this.infoData = result
-            this.updateInProgress = false
+            this.updateInProgressFlag = false
           })
         }
       }, 10000)
@@ -302,7 +302,7 @@ export default {
     waitUntilUpdate(){
       return new Promise((resolve, reject) => {
         let timerID = setInterval( () => {
-          if(this.updateInProgress == false){
+          if(this.updateInProgressFlag == false){
             clearInterval(timerID)
             resolve()
           }

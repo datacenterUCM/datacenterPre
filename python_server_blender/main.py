@@ -1,6 +1,9 @@
 from http.server import HTTPServer
 from Controller import Controller
 from ConfigParams import ConfigParams
+import logging
+
+logging.basicConfig(level=logging.WARNING, filename='server.log', format='%(asctime)s - %(levelname)s - %(message)s')
 
 configParams = ConfigParams()
 
@@ -9,7 +12,7 @@ server_address = (configParams.IP, configParams.port)
 
 # Crear una instancia del servidor HTTP
 httpd = HTTPServer(server_address, Controller)
-print('Server listening on port', configParams.port)
+logging.warning('Server listening on port\n', configParams.port)
 
 # Iniciar el servidor
 httpd.serve_forever()
