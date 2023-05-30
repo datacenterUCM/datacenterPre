@@ -5,5 +5,5 @@ services:
     ports:
       - 8085:8085 # Se indican los puertos
     mem_limit: 70m # Límite de memoria
-    restart: never #Se indica que el contenedor se tiene que ejecutar al iniciar el equipo
+    restart: on-failure #Se indica que el contenedor se tiene que ejecutar al iniciar el equipo
     # Otros ajustes y configuraciones para el contenedor
