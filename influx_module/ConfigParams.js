@@ -17,7 +17,7 @@ class ConfigParams{
 
         //this.brokerIP = '10.42.0.1';
         this.brokerIP = '147.96.81.123';
-	//this.brokerIP = '192.168.1.41';
+	    //this.brokerIP = '192.168.1.41';
         
         this.dittoTopic = 'eclipse-ditto-sandbox/org.eclipse.ditto:datacentertwin/things/twin/commands/modify';
         this.movementTopic = '/datacenter/movement' //Tópico en el que se guardan los avisos de movimiento
