@@ -24,9 +24,7 @@ class InfluxModule {
             hum: Influx.FieldType.FLOAT
           },
           tags: [
-            'x',
-            'y',
-            'z',
+            'node',
           ]
         }
       ]

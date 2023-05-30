@@ -20,7 +20,7 @@ class LogicImpl {
         const node = messageJson["node"];
 
         // La localización del nodo se almacena en la clase ConfigParams
-        const nodeLocation = this.configParams.nodeLocations[node - 1];
+        //const nodeLocation = this.configParams.nodeLocations[node - 1];
 
         // Se introduce el dato en el apartado de medidas de temp/hum
         if (topic == this.configParams.dittoTopic) {
@@ -28,7 +28,8 @@ class LogicImpl {
             // en el módulo de influx
             const influxData = [{
                 measurement: this.configParams.measurement,
-                tags: { x: nodeLocation["x"], y: nodeLocation["y"], z: nodeLocation["z"] },
+                //tags: { x: nodeLocation["x"], y: nodeLocation["y"], z: nodeLocation["z"] },
+                tags: { node: node },
                 fields: { temp: messageJson["temp"], hum: messageJson["hum"] }
             }];
 
