@@ -5,6 +5,7 @@ from sklearn.linear_model import Ridge
 from scipy.interpolate import griddata
 from scipy.interpolate import Rbf
 import numpy as np
+import logging
 
 
 class Regressions:
@@ -49,21 +50,28 @@ class Regressions:
         return predictedValues
 
     def RbfInterpolator(self, points, values, pointsToPredict):
+        predictionsArray=[]
 
-        points = np.array(points)
-        values = np.array(values)
-        pointsToPredict = np.array(pointsToPredict)
+        try:
 
-        rbfTemp = Rbf(points[:, 0], points[:, 1], points[:, 2], values[:, 0])
-        rbfHum = Rbf(points[:, 0], points[:, 1], points[:, 2], values[:, 1])
+            points = np.array(points)
+            values = np.array(values)
+            pointsToPredict = np.array(pointsToPredict)
 
-        tempPredictions = rbfTemp(
-            pointsToPredict[:, 0], pointsToPredict[:, 1], pointsToPredict[:, 2])
-        humPredictions = rbfHum(
-            pointsToPredict[:, 0], pointsToPredict[:, 1], pointsToPredict[:, 2])
+            rbfTemp = Rbf(points[:, 0], points[:, 1], points[:, 2], values[:, 0])
+            rbfHum = Rbf(points[:, 0], points[:, 1], points[:, 2], values[:, 1])
 
-        predictions = list(zip(tempPredictions, humPredictions))
+            tempPredictions = rbfTemp(
+                pointsToPredict[:, 0], pointsToPredict[:, 1], pointsToPredict[:, 2])
+            humPredictions = rbfHum(
+                pointsToPredict[:, 0], pointsToPredict[:, 1], pointsToPredict[:, 2])
 
-        predictionsArray = np.array([list(tupla) for tupla in predictions])
+            predictions = list(zip(tempPredictions, humPredictions))
+
+            predictionsArray = np.array([list(tupla) for tupla in predictions])
+
+        except Exception as e:
+            logging.exception('Error al aplicar interpolador rbf. Error: %s\n', str(e))
 
         return predictionsArray
+        

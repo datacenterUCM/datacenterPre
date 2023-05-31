@@ -12,7 +12,7 @@ server_address = (configParams.IP, configParams.port)
 
 # Crear una instancia del servidor HTTP
 httpd = HTTPServer(server_address, Controller)
-logging.warning('Server listening on port\n', configParams.port)
+logging.warning('Server listening on port%s\n', str(configParams.port))
 
 # Iniciar el servidor
 httpd.serve_forever()

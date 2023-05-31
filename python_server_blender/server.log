@@ -1,0 +1,229 @@
+2023-05-31 10:07:30,142 - WARNING - Server listening on port8085
+
+2023-05-31 10:07:36,722 - ERROR - Error al obtener las interpolaciones para el modo heatMap. too many indices for array: array is 1-dimensional, but 2 were indexed
+Traceback (most recent call last):
+  File "/home/sergio/Escritorio/master/TFM/git/datacenter/python_server_blender/DittoRequest.py", line 97, in getData
+    planeResults, planePoints, faceSideXLength, faceSideYLength, infoData, values = self.interpolator.interpolatePlane(points = points,
+  File "/home/sergio/Escritorio/master/TFM/git/datacenter/python_server_blender/Interpolator.py", line 84, in interpolatePlane
+    resultValues = self.interpolatePoints(points, values, grid)
+  File "/home/sergio/Escritorio/master/TFM/git/datacenter/python_server_blender/Interpolator.py", line 55, in interpolatePoints
+    interpolatedPoints = self.regressions.RbfInterpolator(
+  File "/home/sergio/Escritorio/master/TFM/git/datacenter/python_server_blender/Regressions.py", line 57, in RbfInterpolator
+    rbfTemp = Rbf(points[:, 0], points[:, 1], points[:, 2], values[:, 0])
+IndexError: too many indices for array: array is 1-dimensional, but 2 were indexed
+2023-05-31 10:09:03,134 - WARNING - Server listening on port8085
+
+2023-05-31 10:09:13,188 - ERROR - Error al obtener las interpolaciones para el modo heatMap. too many indices for array: array is 1-dimensional, but 2 were indexed
+Traceback (most recent call last):
+  File "/home/sergio/Escritorio/master/TFM/git/datacenter/python_server_blender/DittoRequest.py", line 98, in getData
+    planeResults, planePoints, faceSideXLength, faceSideYLength, infoData, values = self.interpolator.interpolatePlane(points = points,
+  File "/home/sergio/Escritorio/master/TFM/git/datacenter/python_server_blender/Interpolator.py", line 84, in interpolatePlane
+    resultValues = self.interpolatePoints(points, values, grid)
+  File "/home/sergio/Escritorio/master/TFM/git/datacenter/python_server_blender/Interpolator.py", line 55, in interpolatePoints
+    interpolatedPoints = self.regressions.RbfInterpolator(
+  File "/home/sergio/Escritorio/master/TFM/git/datacenter/python_server_blender/Regressions.py", line 57, in RbfInterpolator
+    rbfTemp = Rbf(points[:, 0], points[:, 1], points[:, 2], values[:, 0])
+IndexError: too many indices for array: array is 1-dimensional, but 2 were indexed
+2023-05-31 10:09:58,917 - WARNING - Server listening on port8085
+
+2023-05-31 10:10:08,518 - ERROR - Error al obtener las interpolaciones para el modo heatMap. too many indices for array: array is 1-dimensional, but 2 were indexed
+Traceback (most recent call last):
+  File "/home/sergio/Escritorio/master/TFM/git/datacenter/python_server_blender/DittoRequest.py", line 98, in getData
+    planeResults, planePoints, faceSideXLength, faceSideYLength, infoData, values = self.interpolator.interpolatePlane(points = points,
+  File "/home/sergio/Escritorio/master/TFM/git/datacenter/python_server_blender/Interpolator.py", line 84, in interpolatePlane
+    resultValues = self.interpolatePoints(points, values, grid)
+  File "/home/sergio/Escritorio/master/TFM/git/datacenter/python_server_blender/Interpolator.py", line 55, in interpolatePoints
+    interpolatedPoints = self.regressions.RbfInterpolator(
+  File "/home/sergio/Escritorio/master/TFM/git/datacenter/python_server_blender/Regressions.py", line 57, in RbfInterpolator
+    rbfTemp = Rbf(points[:, 0], points[:, 1], points[:, 2], values[:, 0])
+IndexError: too many indices for array: array is 1-dimensional, but 2 were indexed
+2023-05-31 10:10:43,871 - WARNING - Server listening on port8085
+
+2023-05-31 10:10:53,160 - ERROR - Error al obtener las interpolaciones para el modo heatMap. too many indices for array: array is 1-dimensional, but 2 were indexed
+Traceback (most recent call last):
+  File "/home/sergio/Escritorio/master/TFM/git/datacenter/python_server_blender/DittoRequest.py", line 100, in getData
+    planeResults, planePoints, faceSideXLength, faceSideYLength, infoData, values = self.interpolator.interpolatePlane(points = points,
+  File "/home/sergio/Escritorio/master/TFM/git/datacenter/python_server_blender/Interpolator.py", line 84, in interpolatePlane
+    resultValues = self.interpolatePoints(points, values, grid)
+  File "/home/sergio/Escritorio/master/TFM/git/datacenter/python_server_blender/Interpolator.py", line 55, in interpolatePoints
+    interpolatedPoints = self.regressions.RbfInterpolator(
+  File "/home/sergio/Escritorio/master/TFM/git/datacenter/python_server_blender/Regressions.py", line 57, in RbfInterpolator
+    rbfTemp = Rbf(points[:, 0], points[:, 1], points[:, 2], values[:, 0])
+IndexError: too many indices for array: array is 1-dimensional, but 2 were indexed
+2023-05-31 10:11:44,095 - WARNING - Server listening on port8085
+
+2023-05-31 10:11:49,912 - ERROR - Error al obtener las interpolaciones para el modo heatMap. too many indices for array: array is 1-dimensional, but 2 were indexed
+Traceback (most recent call last):
+  File "/home/sergio/Escritorio/master/TFM/git/datacenter/python_server_blender/DittoRequest.py", line 100, in getData
+    planeResults, planePoints, faceSideXLength, faceSideYLength, infoData, values = self.interpolator.interpolatePlane(points = points,
+  File "/home/sergio/Escritorio/master/TFM/git/datacenter/python_server_blender/Interpolator.py", line 84, in interpolatePlane
+    resultValues = self.interpolatePoints(points, values, grid)
+  File "/home/sergio/Escritorio/master/TFM/git/datacenter/python_server_blender/Interpolator.py", line 55, in interpolatePoints
+    interpolatedPoints = self.regressions.RbfInterpolator(
+  File "/home/sergio/Escritorio/master/TFM/git/datacenter/python_server_blender/Regressions.py", line 57, in RbfInterpolator
+    rbfTemp = Rbf(points[:, 0], points[:, 1], points[:, 2], values[:, 0])
+IndexError: too many indices for array: array is 1-dimensional, but 2 were indexed
+2023-05-31 10:12:23,406 - WARNING - Server listening on port8085
+
+2023-05-31 10:12:27,538 - ERROR - Error al obtener las interpolaciones para el modo heatMap. too many indices for array: array is 1-dimensional, but 2 were indexed
+Traceback (most recent call last):
+  File "/home/sergio/Escritorio/master/TFM/git/datacenter/python_server_blender/DittoRequest.py", line 102, in getData
+    planeResults, planePoints, faceSideXLength, faceSideYLength, infoData, values = self.interpolator.interpolatePlane(points = points,
+  File "/home/sergio/Escritorio/master/TFM/git/datacenter/python_server_blender/Interpolator.py", line 84, in interpolatePlane
+    resultValues = self.interpolatePoints(points, values, grid)
+  File "/home/sergio/Escritorio/master/TFM/git/datacenter/python_server_blender/Interpolator.py", line 55, in interpolatePoints
+    interpolatedPoints = self.regressions.RbfInterpolator(
+  File "/home/sergio/Escritorio/master/TFM/git/datacenter/python_server_blender/Regressions.py", line 57, in RbfInterpolator
+    rbfTemp = Rbf(points[:, 0], points[:, 1], points[:, 2], values[:, 0])
+IndexError: too many indices for array: array is 1-dimensional, but 2 were indexed
+2023-05-31 10:13:05,008 - WARNING - Server listening on port8085
+
+2023-05-31 10:13:06,421 - ERROR - Error al obtener las interpolaciones para el modo heatMap. too many indices for array: array is 1-dimensional, but 2 were indexed
+Traceback (most recent call last):
+  File "/home/sergio/Escritorio/master/TFM/git/datacenter/python_server_blender/DittoRequest.py", line 103, in getData
+    planeResults, planePoints, faceSideXLength, faceSideYLength, infoData, values = self.interpolator.interpolatePlane(points = points,
+  File "/home/sergio/Escritorio/master/TFM/git/datacenter/python_server_blender/Interpolator.py", line 84, in interpolatePlane
+    resultValues = self.interpolatePoints(points, values, grid)
+  File "/home/sergio/Escritorio/master/TFM/git/datacenter/python_server_blender/Interpolator.py", line 55, in interpolatePoints
+    interpolatedPoints = self.regressions.RbfInterpolator(
+  File "/home/sergio/Escritorio/master/TFM/git/datacenter/python_server_blender/Regressions.py", line 57, in RbfInterpolator
+    rbfTemp = Rbf(points[:, 0], points[:, 1], points[:, 2], values[:, 0])
+IndexError: too many indices for array: array is 1-dimensional, but 2 were indexed
+2023-05-31 10:14:19,876 - WARNING - Server listening on port8085
+
+2023-05-31 10:14:23,376 - ERROR - Error al obtener las interpolaciones para el modo heatMap. too many indices for array: array is 1-dimensional, but 2 were indexed
+Traceback (most recent call last):
+  File "/home/sergio/Escritorio/master/TFM/git/datacenter/python_server_blender/DittoRequest.py", line 98, in getData
+    planeResults, planePoints, faceSideXLength, faceSideYLength, infoData, values = self.interpolator.interpolatePlane(points = points,
+  File "/home/sergio/Escritorio/master/TFM/git/datacenter/python_server_blender/Interpolator.py", line 84, in interpolatePlane
+    resultValues = self.interpolatePoints(points, values, grid)
+  File "/home/sergio/Escritorio/master/TFM/git/datacenter/python_server_blender/Interpolator.py", line 55, in interpolatePoints
+    interpolatedPoints = self.regressions.RbfInterpolator(
+  File "/home/sergio/Escritorio/master/TFM/git/datacenter/python_server_blender/Regressions.py", line 57, in RbfInterpolator
+    rbfTemp = Rbf(points[:, 0], points[:, 1], points[:, 2], values[:, 0])
+IndexError: too many indices for array: array is 1-dimensional, but 2 were indexed
+2023-05-31 10:14:55,909 - WARNING - Server listening on port8085
+
+2023-05-31 10:15:03,187 - ERROR - Error al obtener las interpolaciones para el modo heatMap. too many indices for array: array is 1-dimensional, but 2 were indexed
+Traceback (most recent call last):
+  File "/home/sergio/Escritorio/master/TFM/git/datacenter/python_server_blender/DittoRequest.py", line 98, in getData
+    planeResults, planePoints, faceSideXLength, faceSideYLength, infoData, values = self.interpolator.interpolatePlane(points = points,
+  File "/home/sergio/Escritorio/master/TFM/git/datacenter/python_server_blender/Interpolator.py", line 84, in interpolatePlane
+    resultValues = self.interpolatePoints(points, values, grid)
+  File "/home/sergio/Escritorio/master/TFM/git/datacenter/python_server_blender/Interpolator.py", line 55, in interpolatePoints
+    interpolatedPoints = self.regressions.RbfInterpolator(
+  File "/home/sergio/Escritorio/master/TFM/git/datacenter/python_server_blender/Regressions.py", line 57, in RbfInterpolator
+    rbfTemp = Rbf(points[:, 0], points[:, 1], points[:, 2], values[:, 0])
+IndexError: too many indices for array: array is 1-dimensional, but 2 were indexed
+2023-05-31 10:15:09,073 - ERROR - Error al obtener las interpolaciones para el modo heatMap. too many indices for array: array is 1-dimensional, but 2 were indexed
+Traceback (most recent call last):
+  File "/home/sergio/Escritorio/master/TFM/git/datacenter/python_server_blender/DittoRequest.py", line 98, in getData
+    planeResults, planePoints, faceSideXLength, faceSideYLength, infoData, values = self.interpolator.interpolatePlane(points = points,
+  File "/home/sergio/Escritorio/master/TFM/git/datacenter/python_server_blender/Interpolator.py", line 84, in interpolatePlane
+    resultValues = self.interpolatePoints(points, values, grid)
+  File "/home/sergio/Escritorio/master/TFM/git/datacenter/python_server_blender/Interpolator.py", line 55, in interpolatePoints
+    interpolatedPoints = self.regressions.RbfInterpolator(
+  File "/home/sergio/Escritorio/master/TFM/git/datacenter/python_server_blender/Regressions.py", line 57, in RbfInterpolator
+    rbfTemp = Rbf(points[:, 0], points[:, 1], points[:, 2], values[:, 0])
+IndexError: too many indices for array: array is 1-dimensional, but 2 were indexed
+2023-05-31 10:15:35,426 - WARNING - Server listening on port8085
+
+2023-05-31 10:15:37,544 - ERROR - Error al obtener las interpolaciones para el modo heatMap. too many indices for array: array is 1-dimensional, but 2 were indexed
+Traceback (most recent call last):
+  File "/home/sergio/Escritorio/master/TFM/git/datacenter/python_server_blender/DittoRequest.py", line 99, in getData
+    planeResults, planePoints, faceSideXLength, faceSideYLength, infoData, values = self.interpolator.interpolatePlane(points = points,
+  File "/home/sergio/Escritorio/master/TFM/git/datacenter/python_server_blender/Interpolator.py", line 84, in interpolatePlane
+    resultValues = self.interpolatePoints(points, values, grid)
+  File "/home/sergio/Escritorio/master/TFM/git/datacenter/python_server_blender/Interpolator.py", line 55, in interpolatePoints
+    interpolatedPoints = self.regressions.RbfInterpolator(
+  File "/home/sergio/Escritorio/master/TFM/git/datacenter/python_server_blender/Regressions.py", line 57, in RbfInterpolator
+    rbfTemp = Rbf(points[:, 0], points[:, 1], points[:, 2], values[:, 0])
+IndexError: too many indices for array: array is 1-dimensional, but 2 were indexed
+2023-05-31 10:16:13,442 - WARNING - Server listening on port8085
+
+2023-05-31 10:16:17,487 - ERROR - Error al obtener las interpolaciones para el modo heatMap. too many indices for array: array is 1-dimensional, but 2 were indexed
+Traceback (most recent call last):
+  File "/home/sergio/Escritorio/master/TFM/git/datacenter/python_server_blender/DittoRequest.py", line 99, in getData
+    planeResults, planePoints, faceSideXLength, faceSideYLength, infoData, values = self.interpolator.interpolatePlane(points = points,
+  File "/home/sergio/Escritorio/master/TFM/git/datacenter/python_server_blender/Interpolator.py", line 84, in interpolatePlane
+    resultValues = self.interpolatePoints(points, values, grid)
+  File "/home/sergio/Escritorio/master/TFM/git/datacenter/python_server_blender/Interpolator.py", line 55, in interpolatePoints
+    interpolatedPoints = self.regressions.RbfInterpolator(
+  File "/home/sergio/Escritorio/master/TFM/git/datacenter/python_server_blender/Regressions.py", line 57, in RbfInterpolator
+    rbfTemp = Rbf(points[:, 0], points[:, 1], points[:, 2], values[:, 0])
+IndexError: too many indices for array: array is 1-dimensional, but 2 were indexed
+2023-05-31 10:16:58,857 - WARNING - Server listening on port8085
+
+2023-05-31 10:17:04,592 - ERROR - Error al obtener las interpolaciones para el modo heatMap. too many indices for array: array is 1-dimensional, but 2 were indexed
+Traceback (most recent call last):
+  File "/home/sergio/Escritorio/master/TFM/git/datacenter/python_server_blender/DittoRequest.py", line 99, in getData
+    planeResults, planePoints, faceSideXLength, faceSideYLength, infoData, values = self.interpolator.interpolatePlane(points = points,
+  File "/home/sergio/Escritorio/master/TFM/git/datacenter/python_server_blender/Interpolator.py", line 87, in interpolatePlane
+    resultValues = self.interpolatePoints(points, values, grid)
+  File "/home/sergio/Escritorio/master/TFM/git/datacenter/python_server_blender/Interpolator.py", line 55, in interpolatePoints
+    interpolatedPoints = self.regressions.RbfInterpolator(
+  File "/home/sergio/Escritorio/master/TFM/git/datacenter/python_server_blender/Regressions.py", line 57, in RbfInterpolator
+    rbfTemp = Rbf(points[:, 0], points[:, 1], points[:, 2], values[:, 0])
+IndexError: too many indices for array: array is 1-dimensional, but 2 were indexed
+2023-05-31 10:18:50,089 - WARNING - Server listening on port8085
+
+2023-05-31 10:18:59,290 - ERROR - Error al obtener las interpolaciones para el modo heatMap. too many indices for array: array is 1-dimensional, but 2 were indexed
+Traceback (most recent call last):
+  File "/home/sergio/Escritorio/master/TFM/git/datacenter/python_server_blender/DittoRequest.py", line 99, in getData
+    planeResults, planePoints, faceSideXLength, faceSideYLength, infoData, values = self.interpolator.interpolatePlane(points = points,
+  File "/home/sergio/Escritorio/master/TFM/git/datacenter/python_server_blender/Interpolator.py", line 90, in interpolatePlane
+    resultValues = self.interpolatePoints(points, values, grid)
+  File "/home/sergio/Escritorio/master/TFM/git/datacenter/python_server_blender/Interpolator.py", line 56, in interpolatePoints
+    interpolatedPoints = self.regressions.RbfInterpolator(
+  File "/home/sergio/Escritorio/master/TFM/git/datacenter/python_server_blender/Regressions.py", line 59, in RbfInterpolator
+    rbfTemp = Rbf(points[:, 0], points[:, 1], points[:, 2], values[:, 0])
+IndexError: too many indices for array: array is 1-dimensional, but 2 were indexed
+2023-05-31 10:20:18,942 - WARNING - Server listening on port8085
+
+2023-05-31 10:20:24,054 - ERROR - Error al obtener las interpolaciones para el modo heatMap. list indices must be integers or slices, not tuple
+Traceback (most recent call last):
+  File "/home/sergio/Escritorio/master/TFM/git/datacenter/python_server_blender/DittoRequest.py", line 99, in getData
+    planeResults, planePoints, faceSideXLength, faceSideYLength, infoData, values = self.interpolator.interpolatePlane(points = points,
+  File "/home/sergio/Escritorio/master/TFM/git/datacenter/python_server_blender/Interpolator.py", line 94, in interpolatePlane
+    resultValues = resultValues[:, 0]  # Lista de temperaturas interpoladas
+TypeError: list indices must be integers or slices, not tuple
+2023-05-31 10:22:42,429 - WARNING - Server listening on port8085
+
+2023-05-31 10:22:49,485 - ERROR - Error al obtener las interpolaciones para el modo heatMap. list indices must be integers or slices, not tuple
+Traceback (most recent call last):
+  File "/home/sergio/Escritorio/master/TFM/git/datacenter/python_server_blender/DittoRequest.py", line 99, in getData
+    planeResults, planePoints, faceSideXLength, faceSideYLength, infoData, values = self.interpolator.interpolatePlane(points = points,
+  File "/home/sergio/Escritorio/master/TFM/git/datacenter/python_server_blender/Interpolator.py", line 94, in interpolatePlane
+    resultValues = resultValues[:, 0]  # Lista de temperaturas interpoladas
+TypeError: list indices must be integers or slices, not tuple
+2023-05-31 10:24:26,113 - WARNING - Server listening on port8085
+
+2023-05-31 10:24:58,995 - ERROR - Error al obtener las interpolaciones para el modo heatMap. list indices must be integers or slices, not tuple
+Traceback (most recent call last):
+  File "/home/sergio/Escritorio/master/TFM/git/datacenter/python_server_blender/DittoRequest.py", line 102, in getData
+    planeResults, planePoints, faceSideXLength, faceSideYLength, infoData, values = self.interpolator.interpolatePlane(points = points,
+  File "/home/sergio/Escritorio/master/TFM/git/datacenter/python_server_blender/Interpolator.py", line 95, in interpolatePlane
+    resultValues = resultValues[:, 0]  # Lista de temperaturas interpoladas
+TypeError: list indices must be integers or slices, not tuple
+2023-05-31 10:25:58,010 - WARNING - Server listening on port8085
+
+2023-05-31 10:26:03,382 - ERROR - Error al obtener las interpolaciones para el modo heatMap. list indices must be integers or slices, not tuple
+Traceback (most recent call last):
+  File "/home/sergio/Escritorio/master/TFM/git/datacenter/python_server_blender/DittoRequest.py", line 105, in getData
+    planeResults, planePoints, faceSideXLength, faceSideYLength, infoData, values = self.interpolator.interpolatePlane(points = points,
+  File "/home/sergio/Escritorio/master/TFM/git/datacenter/python_server_blender/Interpolator.py", line 95, in interpolatePlane
+    resultValues = resultValues[:, 0]  # Lista de temperaturas interpoladas
+TypeError: list indices must be integers or slices, not tuple
+2023-05-31 10:26:46,053 - WARNING - Server listening on port8085
+
+2023-05-31 10:26:50,909 - ERROR - Error al obtener las interpolaciones para el modo heatMap. list indices must be integers or slices, not tuple
+Traceback (most recent call last):
+  File "/home/sergio/Escritorio/master/TFM/git/datacenter/python_server_blender/DittoRequest.py", line 107, in getData
+    planeResults, planePoints, faceSideXLength, faceSideYLength, infoData, values = self.interpolator.interpolatePlane(points = points,
+  File "/home/sergio/Escritorio/master/TFM/git/datacenter/python_server_blender/Interpolator.py", line 95, in interpolatePlane
+    resultValues = resultValues[:, 0]  # Lista de temperaturas interpoladas
+TypeError: list indices must be integers or slices, not tuple
+2023-05-31 10:36:53,588 - WARNING - Server listening on port8085
+
+2023-05-31 10:39:17,807 - WARNING - Server listening on port8085
+

@@ -33,7 +33,7 @@ class DittoRequest:
 
             if response.status_code == 200:  # Si la respuesta es exitosa
                 self.data = json.loads(response.text)  # Obtener los datos de la respuesta en formato JSON
-                #print(self.logTag, "data received")  # Imprimir los datos obtenidos
+                print(self.logTag, "data received from ditto")  # Imprimir los datos obtenidos
             else:
                 #print("Error al hacer la petición GET")  # En caso de error, imprimir mensaje de error
                 logging.error('Error al hacer fetch a ditto. Response: %s\n', str(response))
@@ -92,6 +92,7 @@ class DittoRequest:
         rhValues = values[:, 1] # Lista de humedades relativas
 
         if mode == "heatMap":
+            data={}
             #Se obtienen las interpolaciones para un plano en z determinado
             try:
                 planeResults, planePoints, faceSideXLength, faceSideYLength, infoData, values = self.interpolator.interpolatePlane(points = points, 
@@ -100,6 +101,7 @@ class DittoRequest:
                                                                         colorRange = colorRange,
                                                                         values = values, 
                                                                         zVal = zVal)
+
 
                 data = {"planeResults": planeResults.tolist(), 
                         "planePoints": planePoints, 
@@ -114,6 +116,7 @@ class DittoRequest:
             return data
         
         elif mode == "3DMap":
+            data={}
 
             try:
                 planeResults, planePoints, faceSideXLength, faceSideYLength, infoData, values = self.interpolator.interpolate3D( points = points, 
