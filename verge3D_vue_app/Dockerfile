@@ -1,5 +1,5 @@
 # Utiliza una imagen base de Nginx para servir los archivos estáticos
-FROM nginx:latest
+FROM nginx:1.13.12-alpine
 
 # Elimina la configuración predeterminada de Nginx
 RUN rm -rf /etc/nginx/conf.d/*
