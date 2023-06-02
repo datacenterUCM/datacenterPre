@@ -2,7 +2,10 @@
     "thingId": "org.eclipse.ditto:datacentertwin",
     "definition": "digitaltwin:DigitaltwinExample:1.0.0",
     "attributes": {
-      "location": "fdi UCM"
+      "location": "fdi UCM",
+      "xlen": 7.26,
+      "ylen": 2.74,
+      "zlen": 4.5
     },
     "features": {
       "node1Val": {
