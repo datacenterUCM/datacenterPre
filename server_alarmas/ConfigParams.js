@@ -35,6 +35,8 @@ class ConfigParams {
         this.setTimetoutTopic = '/datacenter/setTimeout';
         //Topico para cambiar el umbral de vibración del nodo 9
         this.setvibThresh = '/datacenter/setThresh';
+        // Tópico al que publca el nodo 9 cuando ha transcurrido el tiempo establecido desde la última vibración
+        this.notMovementTopic = '/datacenter/noMovement'
 
         //Se leen los valores del archivo json de configuración
         this.readConfigFile();

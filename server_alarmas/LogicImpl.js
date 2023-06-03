@@ -48,11 +48,12 @@ class LogicImpl {
                 //console.log("measurements");
                 this.checkAlarm(messageJson);
             }
-            if (messageJson["type"] == 'airConditionateAlarm') {
-                //console.log("airConditioning alarm");
-                this.bot.sendMessage(this.configParams.channelId,
-                    `${this.tag} ${this.warning} Se ha registrado una anomalía en las vibraciones de la máquina de frío en el nodo ${messageJson["node"]}`);
-            }
+        }
+        //Si el nodo a reportado que se ha superado el tiempo máximo entre vibraciones, se envía una alarma.
+        else if (topic == this.configParams.notMovementTopic){
+            //console.log("airConditioning alarm");
+            this.bot.sendMessage(this.configParams.channelId,
+                `${this.tag} ${this.warning} Se ha registrado una anomalía en las vibraciones de la máquina de frío en el nodo ${messageJson["node"]}`);
         }
         //Si se reciben mensajes de los sensores reportando su estado, se almacenan en nodeReportBuff para enviarlos por telegram.
         else if (topic == this.configParams.alarmModuleTopic) {

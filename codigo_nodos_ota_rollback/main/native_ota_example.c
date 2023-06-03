@@ -82,6 +82,7 @@ static const char *alarmModuleTopic = "/datacenter/alarmModule";
 static const char *dittoTopic = "eclipse-ditto-sandbox/org.eclipse.ditto:datacentertwin/things/twin/commands/modify";
 static const char *generalReportTopic = "/datacenter/generalReport";
 static const char *movementDetectedTopic = "/datacenter/movement";
+static const char *movementNotDetectedTopic = "/datacenter/noMovement"
 static const char *setThresholdTopic = "/datacenter/setThresh";
 static const char *setTimeoutTopic = "/datacenter/setTimeout";
 static const char *measureVibrOnTopic = "/datacenter/measureVibOn"; // Tópico que recibe la orden de medir las vibraciones. Si se miden, se envían las lecturas por mqtt, si no no.
@@ -299,7 +300,7 @@ void accelAlarmTask(void *pvParameters)
             cJSON_AddNumberToObject(root, "node", nodeId);
             const char *buf = cJSON_Print(root);
             cJSON_Delete(root);
-            esp_mqtt_client_publish(client, dittoTopic, buf, 0, 0, 0);
+            esp_mqtt_client_publish(client, movementNotDetectedTopic, buf, 0, 0, 0);
             free(buf);
         }
 
