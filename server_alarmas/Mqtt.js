@@ -26,6 +26,7 @@ class MqttModule {
             this.client.subscribe(this.configParams.dittoTopic);
             this.client.subscribe(this.configParams.alarmModuleTopic);
             this.client.subscribe(this.configParams.movementTopic);
+            this.client.subscribe(this.configParams.notMovementTopic);
             console.log('Connected to broker on', this.brokerIP);
         });
 
