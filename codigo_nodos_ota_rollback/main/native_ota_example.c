@@ -265,12 +265,12 @@ void accelAlarmTask(void *pvParameters)
 
             cJSON_AddStringToObject(root, "type", type);
             cJSON_AddNumberToObject(root, "node", nodeId);
-            cJSON_AddNumberToObject(root, "xValue", accelDataX);
-            cJSON_AddNumberToObject(root, "yValue", accelDataY);
-            cJSON_AddNumberToObject(root, "zValue", accelDataZ);
-            cJSON_AddNumberToObject(root, "xAVGValue", avgAccelDataX);
-            cJSON_AddNumberToObject(root, "yAVGValue", avgAccelDataY);
-            cJSON_AddNumberToObject(root, "zAVGValue", avgAccelDataZ);
+            cJSON_AddNumberToObject(root, "xVal", accelDataX);
+            cJSON_AddNumberToObject(root, "yVal", accelDataY);
+            cJSON_AddNumberToObject(root, "zVal", accelDataZ);
+            cJSON_AddNumberToObject(root, "xAvg", avgAccelDataX);
+            cJSON_AddNumberToObject(root, "yAvg", avgAccelDataY);
+            cJSON_AddNumberToObject(root, "zAvg", avgAccelDataZ);
             const char *buf = cJSON_Print(root);
             cJSON_Delete(root);
             esp_mqtt_client_publish(client, movementDetectedTopic, buf, 0, 0, 0);
