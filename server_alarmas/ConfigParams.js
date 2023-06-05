@@ -43,7 +43,7 @@ class ConfigParams {
     readConfigFile() {
         //Se lee el archivo que contiene los valores de configuración
         const data = fs.readFileSync('./config_params.json', 'utf-8');
-        let jsonData = JSON.parse(data);
+        let jsonData = JSON.parse(data); 
 
         this.tempThreshold = jsonData["tempThresh"];
         this.humThreshold = jsonData["humThresh"];

@@ -27,17 +27,6 @@ class ConfigParams{
 
         this.TAG = '[INFLUX MODULE]'
 
-        // Esta lista contiene las localizaciones de los nodos.
-        // La posición 0 de la lista se corresponde con el nodo 1.
-        /*this.nodeLocations = [{x:0, y:0, z:0},
-                            {x:1, y:1, z:1},
-                            {x:1, y:1, z:1},
-                            {x:1, y:1, z:1},
-                            {x:1, y:1, z:1},
-                            {x:1, y:1, z:1},
-                            {x:1, y:1, z:1},
-                            {x:1, y:1, z:1},
-                            {x:9, y:1, z:1}]*/
     }
 
 }
