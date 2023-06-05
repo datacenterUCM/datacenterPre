@@ -59,11 +59,14 @@ static uint16_t accelPeriod = 10;
 #define GPIO_BUILTIN_LED 7
 #define GPIO_PIN_SEL 1ULL << GPIO_BUILTIN_LED
 
+#define VIB_ARRAY_LENGTH 5
+
 TaskHandle_t gyroAlarmTaskHandle;
 TaskHandle_t accelAlarmTaskHandle;
 TaskHandle_t monitorVibTaskHandle;
 TaskHandle_t twinGetDataTaskHandle;
 TaskHandle_t twinSendGetDataTaskHandle;
+TaskHandle_t checkVibrationsTaskHandle;
 
 // Identificador del "thing" en eclipse ditto
 const char *thingId = "org.eclipse.ditto:datacentertwin";
@@ -98,6 +101,15 @@ static i2c_port_t i2c_port = I2C_NUM_0;
 
 // Queue for twin
 QueueHandle_t twinQueue;
+
+// Cola donde se almacenarán los datos de vibración
+QueueHandle_t vibQueue;
+
+struct vibStructFormat{
+    int16_t xVal;
+    int16_t yVal;
+    int16_t zVal;
+};
 
 // Estructura de datos que sirve para intercambiar información entre la tarea que recopila los datos
 // y la tarea que envía los datos a ditto
@@ -335,11 +347,78 @@ void accelAlarmTask(void *pvParameters)
     }
 }
 
+// Esta función lee la cola de vibraciones, calcula la media de los 4 últimos elementos de la cola y 
+// los compara con el primero de la cola.
+void checkVibrationsTask(void *pvParameters){
+
+    // En este array se guardan todos los valores de la cola
+    struct vibStructFormat vibMeasArray[5];
+
+    BaseType_t xStatus;
+
+    //Este contador sirve para comprobar que cuando se empiecen a procesar los datos del array, este tenga
+    //ya 5 elementos
+    uint8_t contador = 0;
+
+    while(1){
+
+        // El elemento de la cola (la última vibración medida) se guarda en la primera posición del array
+        xStatus = xQueueReceive(vibQueue, &vibMeasArray[0], 1000);
+        if(xStatus == pdTRUE){
+            if(contador < 5) contador ++;
+
+            // Tan sólo se procesan los datos si el array tiene 5 datos de vibración cargados
+            if(contador == 5){
+                struct vibStructFormat vibAvg;
+                vibAvg.xVal = 0;
+                vibAvg.yVal = 0;
+                vibAvg.zVal = 0;
+
+                // Se calcula la media de las 4 últimas posiciones del array
+                for(int i=0; i<VIB_ARRAY_LENGTH-1; i++){
+                    vibAvg.xVal = vibAvg.xVal + vibMeasArray[i+1].xVal;
+                    vibAvg.yVal = vibAvg.yVal + vibMeasArray[i+1].yVal;
+                    vibAvg.zVal = vibAvg.zVal + vibMeasArray[i+1].zVal;
+                }
+                vibAvg.xVal = vibAvg.xVal / (VIB_ARRAY_LENGTH-1);
+                vibAvg.yVal = vibAvg.yVal / (VIB_ARRAY_LENGTH-1);
+                vibAvg.zVal = vibAvg.zVal / (VIB_ARRAY_LENGTH-1);
+
+                //printf("Z vib: [%d, %d, %d, %d, %d] media: %d, vibThresh: %d\n", vibMeasArray[0].zVal, vibMeasArray[1].zVal, vibMeasArray[2].zVal,vibMeasArray[3].zVal, vibMeasArray[4].zVal, vibAvg.zVal, vibThres);
+
+                // Si la la última medida de vibración (posicion 0 del array) se diferencia en el umbral 
+                // a la media de las 4 medidas anteriores, se ha detectado movimiento.
+                if (vibMeasArray[0].xVal > vibAvg.xVal + vibThres || vibMeasArray[0].xVal < vibAvg.xVal - vibThres 
+                    || vibMeasArray[0].yVal > vibAvg.yVal + vibThres || vibMeasArray[0].yVal < vibAvg.yVal - vibThres 
+                    || vibMeasArray[0].zVal > vibAvg.zVal + vibThres || vibMeasArray[0].zVal < vibAvg.yVal - vibThres){
+
+                        ESP_LOGI(TAG, "MOVIMIENTO DETECTADO\n");
+
+                }
+
+            }
+
+            // Se desplazan todos los elementos del array hacia la derecha para dejar libre la primera posición. 
+            // Se deshecha el último valor
+            for(int i=0; i<VIB_ARRAY_LENGTH-1; i++){
+                vibMeasArray[i+1] = vibMeasArray[i];
+            }
+
+        }
+
+    }
+
+}
+
 // Esta tarea únicamente mide y envía los datos de vibración
 void monitorVibTask(void *pvParameters)
 {
-
     printf("tarea de monitorizacion\n");
+
+    //Estructura para guardar los datos de vibración
+    struct vibStructFormat vibMeasurements;
+    //Cola donde se introducen los datos de vibración
+    vibQueue = xQueueCreate(5, sizeof(vibMeasurements));
 
     // Obtain the mqtt client
     esp_mqtt_client_handle_t client = *((esp_mqtt_client_handle_t *)pvParameters);
@@ -365,19 +444,22 @@ void monitorVibTask(void *pvParameters)
 
     while (1)
     {
-
-        ESP_ERROR_CHECK(icm42670_read_raw_data(&device, accelxReg, &accelDataX));
+        /*ESP_ERROR_CHECK(icm42670_read_raw_data(&device, accelxReg, &accelDataX));
         ESP_ERROR_CHECK(icm42670_read_raw_data(&device, accelyReg, &accelDataY));
-        ESP_ERROR_CHECK(icm42670_read_raw_data(&device, accelzReg, &accelDataZ));
+        ESP_ERROR_CHECK(icm42670_read_raw_data(&device, accelzReg, &accelDataZ));*/
+
+        ESP_ERROR_CHECK(icm42670_read_raw_data(&device, accelxReg, &(vibMeasurements.xVal)));
+        ESP_ERROR_CHECK(icm42670_read_raw_data(&device, accelyReg, &vibMeasurements.yVal));
+        ESP_ERROR_CHECK(icm42670_read_raw_data(&device, accelzReg, &vibMeasurements.zVal));
 
         // Las medidas se toman en valor absoluto ya que, como se va a calcular la media, el resultado de esta podría ser próximo a 0 si
         // se están tomando medidas consecutivamente positivas y negativas: media(700, -700, 700, -700) = 0
-        if (accelDataX < 0)
-            accelDataX = -1 * accelDataX;
-        if (accelDataY < 0)
-            accelDataY = -1 * accelDataY;
-        if (accelDataZ < 0)
-            accelDataZ = -1 * accelDataZ;
+        if (vibMeasurements.xVal < 0)
+            vibMeasurements.xVal = -1 * vibMeasurements.xVal;
+        if (vibMeasurements.yVal < 0)
+            vibMeasurements.yVal = -1 * vibMeasurements.yVal;
+        if (vibMeasurements.zVal < 0)
+            vibMeasurements.zVal = -1 * vibMeasurements.zVal;
 
         // Si el envío del valor de las vibraciones está activado se envían las mediciones
         if (sendVibrOnOff == true)
@@ -388,15 +470,18 @@ void monitorVibTask(void *pvParameters)
             cJSON_AddStringToObject(root, "thingId", thingId);
             cJSON_AddStringToObject(root, "type", type);
             cJSON_AddNumberToObject(root, "node", nodeId);
-            cJSON_AddNumberToObject(root, "xVal", accelDataX);
-            cJSON_AddNumberToObject(root, "yVal", accelDataY);
-            cJSON_AddNumberToObject(root, "zVal", accelDataZ);
+            cJSON_AddNumberToObject(root, "xVal", vibMeasurements.xVal);
+            cJSON_AddNumberToObject(root, "yVal", vibMeasurements.yVal);
+            cJSON_AddNumberToObject(root, "zVal", vibMeasurements.zVal);
 
             const char *buf = cJSON_Print(root);
             cJSON_Delete(root);
             esp_mqtt_client_publish(client, vibMeasurementTopic, buf, 0, 0, 0);
             free(buf);
         }
+
+        //printf("introduciendo valor en la cola...\n");
+        xQueueSendToFront(vibQueue, &vibMeasurements, 100);
 
         vTaskDelay(pdMS_TO_TICKS(accelPeriod));
     }
@@ -860,6 +945,7 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
 #endif
 #ifdef CONFIG_EXAMPLE_MONITOR_VIB
                     vTaskSuspend(monitorVibTaskHandle);
+                    vTaskSuspend(checkVibrationsTaskHandle);
 #endif
                 }
 #ifndef CONFIG_EXAMPLE_MONITOR_VIB
@@ -1050,6 +1136,7 @@ static void mqtt_app_start(void)
 #endif
 #ifdef CONFIG_EXAMPLE_MONITOR_VIB
         xTaskCreate(monitorVibTask, "monitorVibTask", 4096, &client, 4, &monitorVibTaskHandle);
+        xTaskCreate(checkVibrationsTask, "checkVibrationsTask", 4096, &client, 4, &checkVibrationsTaskHandle);
 #endif
     }
 }
