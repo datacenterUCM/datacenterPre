@@ -7,12 +7,10 @@ const { LogicImpl } = require("./LogicImpl");
 
 class Controller {
 
-    constructor(channelId, botToken, destinationId, sergioId, logicImpl, mqtt) {
+    constructor(channelId, botToken, logicImpl, mqtt) {
 
-        this.destinationId = destinationId;
         this.channelId = channelId;
         this.botToken = botToken;
-        this.sergioId = sergioId;
 
         this.tag = "[BOT]";
 
@@ -37,8 +35,6 @@ class Controller {
     */
 
     initController() {
-
-        //console.log("channelId = "+this.channelId+" botToken = "+this.botToken+" destinationId = "+this.destinationId);
 
         //Prueba de funcionamiento
         this.bot.sendMessage(this.channelId, 'Bot iniciado');

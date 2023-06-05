@@ -15,6 +15,6 @@ logicImpl = new LogicImpl();
 mqtt = new MqttModule(configParams.brokerIP, logicImpl);
 
 //Se instancia el controlador y se inicia
-controller = new Controller( configParams.channelId, configParams.botToken, configParams.destinationId, configParams.sergioId, logicImpl , mqtt);
+controller = new Controller( configParams.channelId, configParams.botToken, logicImpl , mqtt);
 
 controller.initController();

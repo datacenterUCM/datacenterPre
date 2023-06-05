@@ -13,9 +13,6 @@ class ConfigParams {
         //El channelId tan sólo se puede obtener poniendo el canal en público y 
         this.channelId = '-1001885304412';
 
-        this.destinationId = '5812715209';
-        this.sergioId = '5812715209';
-
         //Umbral máximo de temperatura en ºC y de humedad a partir del cual se dispara la alarma
         this.tempThreshold;
         this.humThreshold;
