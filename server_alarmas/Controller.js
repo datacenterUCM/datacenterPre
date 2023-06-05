@@ -43,8 +43,6 @@ class Controller {
         //Prueba de funcionamiento
         this.bot.sendMessage(this.channelId, 'Bot iniciado');
 
-        //this.bot.sendMessage(this.destinationId, 'te amo jiji');
-
         this.bot.on('message', (msg) => {
 
             //Mensaje en el canal
