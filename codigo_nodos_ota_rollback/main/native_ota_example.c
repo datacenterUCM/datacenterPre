@@ -92,6 +92,9 @@ static const char *measureVibrOffTopic = "/datacenter/measureVibOff";
 static const char *vibMeasurementTopic = "/datacenter/vibMeasurement"; // Tópico al que se publican las medidas de vibracion, en caso de que estén activadas.
 static const char *accelPeriodTopic = "/datacenter/accelPeriod";       // Tópico para modificar el periodo del acelerómetro
 static const char *resetTopic = "/datacenter/reset"; // Tópico para resetear todos los nodos
+static const char *logTopic = "/datacenter/log"; // En este tópico se publican los mensajes de log
+static const char *logTopicOn = "/datacenter/logOn"; //Este tópico sirve para activar el envío de mensajes de log
+static const char *logTopicOff = "/datacenter/logOff"; //Este tópico sirve para desactivar el envío de mensajes de log
 
 static gpio_num_t i2c_gpio_sda = 10;
 static gpio_num_t i2c_gpio_scl = 8;
@@ -144,6 +147,10 @@ static bool sendVibrOnOff = false;
 // Llaves para la nvs
 char *vibTimeKey = "vibTime";
 char *vibThresKey = "vibThres";
+
+// Esta variable sirve para activar o descartivar el envío de mensajes de log
+static bool sendLog = false;
+char *logBuf [200];
 
 // Handle para la nvs
 nvs_handle_t nvsHandle;
@@ -251,6 +258,12 @@ void checkVibrationsTask(void *pvParameters){
 
                 //printf("Z vib: [%d, %d, %d, %d, %d] media: %d, vibThresh: %d\n", vibMeasArray[0].zVal, vibMeasArray[1].zVal, vibMeasArray[2].zVal,vibMeasArray[3].zVal, vibMeasArray[4].zVal, vibAvg.zVal, vibThres);
 
+                if(sendLog == true){
+                    sprintf(logBuf, "Z vib: [%d, %d, %d, %d, %d] media: %d, vibThresh: %d\n", vibMeasArray[0].zVal, vibMeasArray[1].zVal, vibMeasArray[2].zVal,vibMeasArray[3].zVal, vibMeasArray[4].zVal, vibAvg.zVal, vibThres);
+                    esp_mqtt_client_publish(client, logTopic, logBuf, 0, 0, 0);
+                }
+                
+
                 // Si la la última medida de vibración (posicion 0 del array) se diferencia en el umbral 
                 // a la media de las 4 medidas anteriores, se ha detectado movimiento.
                 if (vibMeasArray[0].xVal > vibAvg.xVal + vibThres || vibMeasArray[0].xVal < vibAvg.xVal - vibThres 
@@ -313,8 +326,8 @@ void checkVibrationsTask(void *pvParameters){
 
             // Se desplazan todos los elementos del array hacia la derecha para dejar libre la primera posición. 
             // Se deshecha el último valor
-            for(int i=0; i<VIB_ARRAY_LENGTH-1; i++){
-                vibMeasArray[i+1] = vibMeasArray[i];
+            for(int i=VIB_ARRAY_LENGTH-1; i>0; i--){
+                vibMeasArray[i] = vibMeasArray[i-1];
             }
 
         }
@@ -792,6 +805,8 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
         esp_mqtt_client_subscribe(client, generalReportTopic, 2);
         esp_mqtt_client_subscribe(client, resetTopic, 2);
         esp_mqtt_client_subscribe(client, resetTopicSingle, 2);
+        esp_mqtt_client_subscribe(client, logTopicOn, 2);
+        esp_mqtt_client_subscribe(client, logTopicOff, 2);
         if (nodeId == 9)
         {
             esp_mqtt_client_subscribe(client, setThresholdTopic, 2);
@@ -965,6 +980,16 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
         else if(strncmp(event->topic, resetTopicSingle, 19) == 0){
             ESP_LOGI(TAG, "Reseteo individual. Reseteando ...");
             esp_restart();
+        }
+        //Orden para activar el envío de mensajes de log
+        else if(strncmp(event->topic, logTopicOn, 17) == 0){
+            ESP_LOGI(TAG, "Activando envío de log...");
+            sendLog = true;
+        }
+        //Orden para desactivar el envío de mensajes de log
+        else if(strncmp(event->topic, logTopicOff, 18) == 0){
+            ESP_LOGI(TAG, "Desactivando envío de log...");
+            sendLog = false;
         }
         break;
 
