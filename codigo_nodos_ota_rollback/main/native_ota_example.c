@@ -268,7 +268,7 @@ void checkVibrationsTask(void *pvParameters){
                 // a la media de las 4 medidas anteriores, se ha detectado movimiento.
                 if (vibMeasArray[0].xVal > vibAvg.xVal + vibThres || vibMeasArray[0].xVal < vibAvg.xVal - vibThres 
                     || vibMeasArray[0].yVal > vibAvg.yVal + vibThres || vibMeasArray[0].yVal < vibAvg.yVal - vibThres 
-                    || vibMeasArray[0].zVal > vibAvg.zVal + vibThres || vibMeasArray[0].zVal < vibAvg.yVal - vibThres){
+                    || vibMeasArray[0].zVal > vibAvg.zVal + vibThres || vibMeasArray[0].zVal < vibAvg.zVal - vibThres){
 
                         ESP_LOGI(TAG, "MOVIMIENTO DETECTADO\n");
 
