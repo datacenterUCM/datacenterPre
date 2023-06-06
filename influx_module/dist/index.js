@@ -19,7 +19,7 @@ class ConfigParams{
         this.vibMeasurement = 'vibrations';
 
         // Variable para indicar si se van a guardar los valores de las vibraciones en bbdd o no.
-        //this.measureVibrations = true;
+        this.measureVibrations = true;
 
         this.brokerIP = '10.42.0.1';
         //this.brokerIP = '147.96.81.123';
@@ -33,17 +33,6 @@ class ConfigParams{
 
         this.TAG = '[INFLUX MODULE]'
 
-        // Esta lista contiene las localizaciones de los nodos.
-        // La posición 0 de la lista se corresponde con el nodo 1.
-        /*this.nodeLocations = [{x:0, y:0, z:0},
-                            {x:1, y:1, z:1},
-                            {x:1, y:1, z:1},
-                            {x:1, y:1, z:1},
-                            {x:1, y:1, z:1},
-                            {x:1, y:1, z:1},
-                            {x:1, y:1, z:1},
-                            {x:1, y:1, z:1},
-                            {x:9, y:1, z:1}]*/
     }
 
 }
@@ -117,10 +106,7 @@ class InfluxModule {
           fields: {
             xVal: Influx.FieldType.FLOAT,
             yVal: Influx.FieldType.FLOAT,
-            zVal: Influx.FieldType.FLOAT,
-            xAvg: Influx.FieldType.FLOAT,
-            yAvg: Influx.FieldType.FLOAT,
-            zAvg: Influx.FieldType.FLOAT
+            zVal: Influx.FieldType.FLOAT
           },
           tags:[]
         }
@@ -217,8 +203,7 @@ class LogicImpl {
             const influxData = [{
                 measurement: this.configParams.vibMeasurement,
                 fields: {xVal: messageJson["xVal"], yVal: messageJson["yVal"],
-                        zVal: messageJson["zVal"], xAvg: messageJson["xAvg"],
-                        yAvg: messageJson["yAvg"], zAvg: messageJson["zAvg"]}
+                        zVal: messageJson["zVal"]}
             }]
 
             this.influx.insertIntoVibr(influxData).then(() => {
