@@ -1,0 +1,35 @@
+version: '3'
+services:
+  influx_module_service: #Nombre del servicio
+    build:
+      context: ./influx_module/dist
+      dockerfile: Dockerfile
+    mem_limit: 25m
+    restart: always #Se indica que el contenedor se tiene que ejecutar al iniciar el equipo
+
+  python_server_container: 
+    build:
+      context: ./python_server_blender
+      dockerfile: Dockerfile
+    ports:
+      - 8085:8085 # Se indican los puertos
+    mem_limit: 70m # Límite de memoria
+    restart: on-failure #Reinicio sólo en caso de fallo
+
+  server_alarmas_container: 
+    build:
+      context: ./server_alarmas
+      dockerfile: Dockerfile
+    mem_limit: 35m
+    restart: always 
+
+  verge3d_vue_container: 
+    build:
+      context: ./verge3D_vue_app
+      dockerfile: Dockerfile
+    mem_limit: 18m
+    ports:
+      - 8083:8083
+    restart: always 
+
+
