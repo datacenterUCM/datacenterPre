@@ -273,6 +273,7 @@ void checkVibrationsTask(void *pvParameters){
                         cJSON_AddNumberToObject(root, "xAvg", vibAvg.xVal);
                         cJSON_AddNumberToObject(root, "yAvg", vibAvg.yVal);
                         cJSON_AddNumberToObject(root, "zAvg", vibAvg.zVal);
+                        cJSON_AddNumberToObject(root, "vibThresh", vibThres);
                         const char *buf = cJSON_Print(root);
                         cJSON_Delete(root);
                         esp_mqtt_client_publish(client, movementDetectedTopic, buf, 0, 0, 0);
