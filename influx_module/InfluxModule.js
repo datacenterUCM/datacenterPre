@@ -59,10 +59,7 @@ class InfluxModule {
           fields: {
             xVal: Influx.FieldType.FLOAT,
             yVal: Influx.FieldType.FLOAT,
-            zVal: Influx.FieldType.FLOAT,
-            xAvg: Influx.FieldType.FLOAT,
-            yAvg: Influx.FieldType.FLOAT,
-            zAvg: Influx.FieldType.FLOAT
+            zVal: Influx.FieldType.FLOAT
           },
           tags:[]
         }

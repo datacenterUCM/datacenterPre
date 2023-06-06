@@ -59,8 +59,7 @@ class LogicImpl {
             const influxData = [{
                 measurement: this.configParams.vibMeasurement,
                 fields: {xVal: messageJson["xVal"], yVal: messageJson["yVal"],
-                        zVal: messageJson["zVal"], xAvg: messageJson["xAvg"],
-                        yAvg: messageJson["yAvg"], zAvg: messageJson["zAvg"]}
+                        zVal: messageJson["zVal"]}
             }]
 
             this.influx.insertIntoVibr(influxData).then(() => {
