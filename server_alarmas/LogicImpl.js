@@ -337,7 +337,6 @@ class LogicImpl {
             const helpMsg = {
                 "/report": "Imprime el estado de todos los nodos conectados",
                 "/report <X>": "Imprime el estado de un nodo en específico",
-                "/raspiTemp": "Imprime la temperatura de la raspberry pi",
                 "/setTimeout <X>": "Cambia el tiempo que debe de transcurrir sin vibraciones en la máquina de frío para que se considere una anomalía",
                 "/setThresh <X>": "Cambia el umbral de vibración de la máquinade frío",
                 "/setTemp <X>": "Cambia el umbral de temperatura a partir del cual se dispara la alarma",
