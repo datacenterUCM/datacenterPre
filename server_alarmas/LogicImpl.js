@@ -308,6 +308,20 @@ class LogicImpl {
         })
     }
 
+    //Funciones para activar/desactivar la monitorización de vibraciones.
+    vibOn(mqtt){
+        return new Promise((resolve, reject) => {
+            mqtt.client.publish(this.configParams.vibOnTopic, ".");
+            resolve();
+        })
+    }
+    vibOff(mqtt){
+        return new Promise((resolve, reject) => {
+            mqtt.client.publish(this.configParams.vibOffTopic, ".");
+            resolve();
+        })
+    }
+
     //Función que se ejecuta para consultar los valores de los umbrales
     checkConfig() {
         return new Promise((resolve, reject) => {
@@ -328,7 +342,9 @@ class LogicImpl {
                 "/setThresh <X>": "Cambia el umbral de vibración de la máquinade frío",
                 "/setTemp <X>": "Cambia el umbral de temperatura a partir del cual se dispara la alarma",
                 "/setHum <X>": "Cambia el umbral de humedad a partir del cual se dispara la alarma",
-                "/configParams": "Imprime los valores de los umbrales de temperatura y humedad"
+                "/configParams": "Imprime los valores de los umbrales de temperatura y humedad",
+                "/vibOn" : "Activa la monitorización de vibraciones del nodo de vibraciones de la máquina de frío. Si está activada, las medidas de vibración se guardan en base de datos",
+                "/vibOff" : "Desactiva la monitorización de vibraciones"
             }
             resolve(JSON.stringify(helpMsg, null, 3))
         })

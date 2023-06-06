@@ -33,7 +33,11 @@ class ConfigParams {
         //Topico para cambiar el umbral de vibración del nodo 9
         this.setvibThresh = '/datacenter/setThresh';
         // Tópico al que publca el nodo 9 cuando ha transcurrido el tiempo establecido desde la última vibración
-        this.notMovementTopic = '/datacenter/noMovement'
+        this.notMovementTopic = '/datacenter/noMovement';
+
+        //Tópico para enviar órdenes de monitorización de vibraciones al nodo 9
+        this.vibOnTopic = '/datacenter/measureVibOn';
+        this.vibOffTopic = '/datacenter/measureVibOff';
 
         //Se leen los valores del archivo json de configuración
         this.readConfigFile();
