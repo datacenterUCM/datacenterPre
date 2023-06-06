@@ -62,7 +62,6 @@ static uint16_t accelPeriod = 10;
 #define VIB_ARRAY_LENGTH 5
 
 TaskHandle_t gyroAlarmTaskHandle;
-TaskHandle_t accelAlarmTaskHandle;
 TaskHandle_t monitorVibTaskHandle;
 TaskHandle_t twinGetDataTaskHandle;
 TaskHandle_t twinSendGetDataTaskHandle;
@@ -141,11 +140,7 @@ static uint16_t vibThres;
 // Este es el tiempo que debería transcurrir entre vibraciones de la máquina de frio (m).
 static uint16_t vibTime;
 // Esta variable sirve para activar o desactivar el envío por mqtt de los datos de vibración.
-#ifdef CONFIG_EXAMPLE_MONITOR_VIB
-static bool sendVibrOnOff = true;
-#else
 static bool sendVibrOnOff = false;
-#endif
 // Llaves para la nvs
 char *vibTimeKey = "vibTime";
 char *vibThresKey = "vibThres";
@@ -209,147 +204,17 @@ void gyroAlarmTask(void *pvParameters)
     }
 }
 
-// Esta tarea es la encargada de leer continuamente el acelerómetro y calcular la media de sus últimas medidas. Una vez calculada la media en cada eje,
-// se vuelve a leer el acelerómetro y se comparan las medidas con el valor de la media anterior.
+// Esta función lee la cola de vibraciones, calcula la media de los 4 últimos elementos de la cola y 
+// los compara con el primero de la cola.
 // Si la medida ha variado un determinado umbral con respecto a la media, es que se ha producido movimiento y se envía la alarma.
-// Inicialmente, el movimiento se calculaba teniendo como referencia valores fijos de los ejeces del acelerómetro. Esto supone un problema y es que el nodo debe
-// ser colocado en una posición específica antes de comenzar con las mediciones. Si no se coloca exactamente como se debe, se estaría detectando movimiento aunque
-// no lo haya. El procedimiento de calcular la media de los valores de aceleración en cada eje viene a solventar este problema.
-void accelAlarmTask(void *pvParameters)
-{
+void checkVibrationsTask(void *pvParameters){
+
     // Obtain the mqtt client
     esp_mqtt_client_handle_t client = *((esp_mqtt_client_handle_t *)pvParameters);
-
-    // Init device descriptor and device
-    ESP_ERROR_CHECK(icm42670_init_desc(&device,
-                                       ICM42670_ADDR,
-                                       i2c_port,
-                                       i2c_gpio_sda,
-                                       i2c_gpio_scl));
-
-    ESP_ERROR_CHECK(icm42670_init(&device));
-
-    // enable accelerometer and gyro in low-noise (LN) mode
-    ESP_ERROR_CHECK(icm42670_set_accel_pwr_mode(&device, ICM42670_ACCEL_ENABLE_LN_MODE));
-
-    // Variables para almacenar los valores instantáneos del acelerómetro y para almacenar su media en cada eje:
-    int16_t accelDataX;
-    int16_t accelDataY;
-    int16_t accelDataZ;
-
-    int16_t avgAccelDataX = 0;
-    int16_t avgAccelDataY = 0;
-    int16_t avgAccelDataZ = 0;
 
     clock_t timer = clock();
 
     const char *type = "airConditionateAlarm";
-
-    while (1)
-    {
-
-        // ESP_LOGI(TAG, "gyro x: %d, gyro y: %d, gyro z: %d\n", accelDataX, accelDataY, accelDataZ);
-
-        ESP_ERROR_CHECK(icm42670_read_raw_data(&device, accelxReg, &accelDataX));
-        ESP_ERROR_CHECK(icm42670_read_raw_data(&device, accelyReg, &accelDataY));
-        ESP_ERROR_CHECK(icm42670_read_raw_data(&device, accelzReg, &accelDataZ));
-
-        // Las medidas se toman en valor absoluto ya que, como se va a calcular la media, el resultado de esta podría ser próximo a 0 si
-        // se están tomando medidas consecutivamente positivas y negativas: media(700, -700, 700, -700) = 0
-        if (accelDataX < 0)
-            accelDataX = -1 * accelDataX;
-        if (accelDataY < 0)
-            accelDataY = -1 * accelDataY;
-        if (accelDataZ < 0)
-            accelDataZ = -1 * accelDataZ;
-
-        // Si alguna de las medidas tomadas varía un determinado umbral con respecto a la media anterior, se ha detectado movimiento.
-        if (accelDataX > avgAccelDataX + vibThres || accelDataX < avgAccelDataX - vibThres || accelDataY > avgAccelDataY + vibThres || accelDataY < avgAccelDataY - vibThres || accelDataZ > avgAccelDataZ + vibThres || accelDataZ < avgAccelDataZ - vibThres)
-        {
-
-            ESP_LOGI(TAG, "MOVIMIENTO DETECTADO\n");
-
-            // Cada vez que se detecta movimiento se resetea el reloj.
-            timer = clock();
-
-            // Cada vez que se detecta movimiento se avisa por mqtt
-            cJSON *root = cJSON_CreateObject();
-
-            cJSON_AddStringToObject(root, "type", type);
-            cJSON_AddNumberToObject(root, "node", nodeId);
-            cJSON_AddNumberToObject(root, "xVal", accelDataX);
-            cJSON_AddNumberToObject(root, "yVal", accelDataY);
-            cJSON_AddNumberToObject(root, "zVal", accelDataZ);
-            cJSON_AddNumberToObject(root, "xAvg", avgAccelDataX);
-            cJSON_AddNumberToObject(root, "yAvg", avgAccelDataY);
-            cJSON_AddNumberToObject(root, "zAvg", avgAccelDataZ);
-            const char *buf = cJSON_Print(root);
-            cJSON_Delete(root);
-            esp_mqtt_client_publish(client, movementDetectedTopic, buf, 0, 0, 0);
-            free(buf);
-
-            airConditioningOk = true;
-            vTaskDelay(1000 / portTICK_PERIOD_MS);
-        }
-        avgAccelDataX = 0;
-        avgAccelDataY = 0;
-        avgAccelDataZ = 0;
-
-        // Se calcula el tiempo transcurrido desde la última vez que se detectó movimiento y el instante actual.
-        // Si ha transcurrido más tiempo que el habitual entre vibraciones, se lanza una alarma y se marca la variable
-        // de estado "airConditioningOk" como "false".
-        double time = ((double)(clock() - timer)) / CLOCKS_PER_SEC;
-        if (time > (vibTime * 60) && airConditioningOk == true)
-        {
-            ESP_LOGW(TAG, "HAN TRANSCURRIDO %dmin DESDE LA ÚLTIMA VIBRACIÓN. ENVIANDO ALERTA...", vibTime);
-            airConditioningOk = false;
-
-            // Se prepara un mensaje de alarma para indicar que no se han detectado las vibraciones desde hace un tiempo
-            cJSON *root = cJSON_CreateObject();
-
-            cJSON_AddStringToObject(root, "thingId", thingId);
-            cJSON_AddStringToObject(root, "type", type);
-            cJSON_AddNumberToObject(root, "node", nodeId);
-            const char *buf = cJSON_Print(root);
-            cJSON_Delete(root);
-            esp_mqtt_client_publish(client, movementNotDetectedTopic, buf, 0, 0, 0);
-            free(buf);
-        }
-
-        // Se calcula el valor medio de las medidas del acelerómetro en cada eje. En este caso se está haciendo la media de 4 medidas consecutivas.
-        for (int i = 0; i < 4; i++)
-        {
-
-            ESP_ERROR_CHECK(icm42670_read_raw_data(&device, accelxReg, &accelDataX));
-            ESP_ERROR_CHECK(icm42670_read_raw_data(&device, accelyReg, &accelDataY));
-            ESP_ERROR_CHECK(icm42670_read_raw_data(&device, accelzReg, &accelDataZ));
-
-            // Valores absolutos
-            if (accelDataX < 0)
-                accelDataX = -1 * accelDataX;
-            if (accelDataY < 0)
-                accelDataY = -1 * accelDataY;
-            if (accelDataZ < 0)
-                accelDataZ = -1 * accelDataZ;
-
-            avgAccelDataX = avgAccelDataX + accelDataX;
-            avgAccelDataY = avgAccelDataY + accelDataY;
-            avgAccelDataZ = avgAccelDataZ + accelDataZ;
-
-            vTaskDelay(pdMS_TO_TICKS(10));
-        }
-
-        avgAccelDataX = avgAccelDataX / 4;
-        avgAccelDataY = avgAccelDataY / 4;
-        avgAccelDataZ = avgAccelDataZ / 4;
-
-        vTaskDelay(pdMS_TO_TICKS(ACCEL_PERIOD));
-    }
-}
-
-// Esta función lee la cola de vibraciones, calcula la media de los 4 últimos elementos de la cola y 
-// los compara con el primero de la cola.
-void checkVibrationsTask(void *pvParameters){
 
     // En este array se guardan todos los valores de la cola
     struct vibStructFormat vibMeasArray[5];
@@ -394,8 +259,55 @@ void checkVibrationsTask(void *pvParameters){
 
                         ESP_LOGI(TAG, "MOVIMIENTO DETECTADO\n");
 
+                        // Cada vez que se detecta movimiento se resetea el reloj.
+                        timer = clock();
+
+                        // Cada vez que se detecta movimiento se avisa por mqtt
+                        cJSON *root = cJSON_CreateObject();
+
+                        cJSON_AddStringToObject(root, "type", type);
+                        cJSON_AddNumberToObject(root, "node", nodeId);
+                        cJSON_AddNumberToObject(root, "xVal", vibMeasArray[0].xVal);
+                        cJSON_AddNumberToObject(root, "yVal", vibMeasArray[0].yVal);
+                        cJSON_AddNumberToObject(root, "zVal", vibMeasArray[0].zVal);
+                        cJSON_AddNumberToObject(root, "xAvg", vibAvg.xVal);
+                        cJSON_AddNumberToObject(root, "yAvg", vibAvg.yVal);
+                        cJSON_AddNumberToObject(root, "zAvg", vibAvg.zVal);
+                        const char *buf = cJSON_Print(root);
+                        cJSON_Delete(root);
+                        esp_mqtt_client_publish(client, movementDetectedTopic, buf, 0, 0, 0);
+                        free(buf);
+
+                        contador = 0;
+
+                        airConditioningOk = true;
+                        vTaskDelay(1000 / portTICK_PERIOD_MS);
+
+                        //TODO limpiar la cola
+                        xQueueReset(vibQueue);
                 }
 
+            }
+
+            // Se calcula el tiempo transcurrido desde la última vez que se detectó movimiento y el instante actual.
+            // Si ha transcurrido más tiempo que el habitual entre vibraciones, se lanza una alarma y se marca la variable
+            // de estado "airConditioningOk" como "false".
+            double time = ((double)(clock() - timer)) / CLOCKS_PER_SEC;
+            if (time > (vibTime * 60) && airConditioningOk == true)
+            {
+                ESP_LOGW(TAG, "HAN TRANSCURRIDO %dmin DESDE LA ÚLTIMA VIBRACIÓN. ENVIANDO ALERTA...", vibTime);
+                airConditioningOk = false;
+
+                // Se prepara un mensaje de alarma para indicar que no se han detectado las vibraciones desde hace un tiempo
+                cJSON *root = cJSON_CreateObject();
+
+                cJSON_AddStringToObject(root, "thingId", thingId);
+                cJSON_AddStringToObject(root, "type", type);
+                cJSON_AddNumberToObject(root, "node", nodeId);
+                const char *buf = cJSON_Print(root);
+                cJSON_Delete(root);
+                esp_mqtt_client_publish(client, movementNotDetectedTopic, buf, 0, 0, 0);
+                free(buf);
             }
 
             // Se desplazan todos los elementos del array hacia la derecha para dejar libre la primera posición. 
@@ -883,11 +795,9 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
         {
             esp_mqtt_client_subscribe(client, setThresholdTopic, 2);
             esp_mqtt_client_subscribe(client, setTimeoutTopic, 2);
-#ifdef CONFIG_EXAMPLE_MONITOR_VIB
             esp_mqtt_client_subscribe(client, measureVibrOnTopic, 2);
             esp_mqtt_client_subscribe(client, measureVibrOffTopic, 2);
             esp_mqtt_client_subscribe(client, accelPeriodTopic, 2);
-#endif
         }
 
         break;
@@ -940,18 +850,11 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
                 ESP_LOGI(TAG, "New image url: %s\n", otaParams.url);
                 if (nodeId == 9)
                 {
-#ifndef CONFIG_EXAMPLE_MONITOR_VIB
-                    vTaskSuspend(accelAlarmTaskHandle);
-#endif
-#ifdef CONFIG_EXAMPLE_MONITOR_VIB
                     vTaskSuspend(monitorVibTaskHandle);
                     vTaskSuspend(checkVibrationsTaskHandle);
-#endif
                 }
-#ifndef CONFIG_EXAMPLE_MONITOR_VIB
                 vTaskSuspend(twinGetDataTaskHandle);
                 vTaskSuspend(twinSendGetDataTaskHandle);
-#endif
 
                 ota_task_fcn();
             }
@@ -1126,18 +1029,11 @@ static void mqtt_app_start(void)
     esp_mqtt_client_start(client);
 
     // Se crean las tareas que requieren la instancia del cliente mqtt (pasada como parámetro).
-#ifndef CONFIG_EXAMPLE_MONITOR_VIB
     xTaskCreate(twinSendGetDataTask, "twinSendDataTask", 4096, &client, 3, &twinSendGetDataTaskHandle);
-#endif
     if (nodeId == 9)
     {
-#ifndef CONFIG_EXAMPLE_MONITOR_VIB
-        xTaskCreate(accelAlarmTask, "accelAlarmTask", 4096, &client, 4, &accelAlarmTaskHandle);
-#endif
-#ifdef CONFIG_EXAMPLE_MONITOR_VIB
         xTaskCreate(monitorVibTask, "monitorVibTask", 4096, &client, 4, &monitorVibTaskHandle);
         xTaskCreate(checkVibrationsTask, "checkVibrationsTask", 4096, &client, 4, &checkVibrationsTaskHandle);
-#endif
     }
 }
 
@@ -1314,9 +1210,7 @@ void app_main(void)
     esp_wifi_set_ps(WIFI_PS_NONE);
 #endif // CONFIG_EXAMPLE_CONNECT_WIFI
 
-#ifndef CONFIG_EXAMPLE_MONITOR_VIB
     xTaskCreate(twinGetDataTask, "twinGetDataTask", 4096, NULL, 3, &twinGetDataTaskHandle);
-#endif
 
     mqtt_app_start();
 }

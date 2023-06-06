@@ -15,13 +15,13 @@ menu "Example Configuration"
         help
             URL of the mqtt broker.
     
-    config EXAMPLE_MONITOR_VIB
-        bool "Monitorear vibraciones (SOLO NODO 9)"
-        default n
-        help
-            USAR SOLO CON EL NODO 9.
-            Si se activa se monitorean las vibraciones del nodo 9. Se desactivan el resto de tareas y se procesa
-            únicamente la lectura de vibraciones y su envío.
+    #config EXAMPLE_MONITOR_VIB
+    #    bool "Monitorear vibraciones (SOLO NODO 9)"
+    #    default n
+    #    help
+    #        USAR SOLO CON EL NODO 9.
+    #        Si se activa se monitorean las vibraciones del nodo 9. Se desactivan el resto de tareas y se procesa
+    #        únicamente la lectura de vibraciones y su envío.
 
     config EXAMPLE_FIRMWARE_UPGRADE_URL_FROM_STDIN
         bool
