@@ -108,13 +108,13 @@ class Controller {
             //Comando para activar la monitorización de vibraciones del nodo 9
             else if (msg.text.substring(0, 6) == "/vibOn"){
                 this.logicImpl.vibOn(this.mqtt).then(() => {
-                    this.bot.sendMessage("Monitorización de vibraciones activada");
+                    this.bot.sendMessage(msg.chat.id, "Monitorización de vibraciones activada");
                 })
             }
             //Comando para desactivar la monitorización de vibraciones del nodo 9
             else if (msg.text.substring(0, 7) == "/vibOff"){
                 this.logicImpl.vibOff(this.mqtt).then(() => {
-                    this.bot.sendMessage("Monitorización de vibraciones desactivada");
+                    this.bot.sendMessage(msg.chat.id, "Monitorización de vibraciones desactivada");
                 })
             }
             //Mensaje recibido de otra manera
