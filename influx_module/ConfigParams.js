@@ -13,7 +13,7 @@ class ConfigParams{
         this.vibMeasurement = 'vibrations';
 
         // Variable para indicar si se van a guardar los valores de las vibraciones en bbdd o no.
-        //this.measureVibrations = true;
+        this.measureVibrations = true;
 
         this.brokerIP = '10.42.0.1';
         //this.brokerIP = '147.96.81.123';
