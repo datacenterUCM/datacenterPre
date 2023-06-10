@@ -53,8 +53,8 @@ class ConfigParams{
         //this.mode = "3DMap"
 
         // El rango inicial de temperaturas y humedades que se muestra en el mapa de calor 3D
-        this.map3DTempRange = [ 25, 26 ]
-        this.map3DHumRange = [ 38, 39 ]
+        this.map3DTempRange = [ 23, 32 ]
+        this.map3DHumRange = [ 21, 35 ]
 
         // Measurement inicial el cual se muestra en los mapas de calor
         this.measurement = "temp"
