@@ -227,3 +227,17 @@ TypeError: list indices must be integers or slices, not tuple
 
 2023-05-31 10:39:17,807 - WARNING - Server listening on port8085
 
+2023-06-11 22:36:55,400 - WARNING - Server listening on port8085
+
+2023-06-11 22:38:32,768 - WARNING - Server listening on port8085
+
+2023-06-11 22:40:40,472 - ERROR - Error al convertir datos de entrada. Datos de entrada: invalid literal for int() with base 10: '[22'
+{"zVal": ["2"], "sideYPoints": ["15"], "measurement": ["temp"], "colorRange": ["[22,30]"]}
+Traceback (most recent call last):
+  File "/home/sergio/Escritorio/master/TFM/git/datacenter/python_server_blender/Controller.py", line 36, in do_GET
+    colorRange = list( map( lambda color : int(color), colorRange ) )
+  File "/home/sergio/Escritorio/master/TFM/git/datacenter/python_server_blender/Controller.py", line 36, in <lambda>
+    colorRange = list( map( lambda color : int(color), colorRange ) )
+ValueError: invalid literal for int() with base 10: '[22'
+2023-06-11 22:46:54,409 - WARNING - Server listening on port8085
+
