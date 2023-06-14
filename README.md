@@ -1,5 +1,17 @@
-Se ha creado una cuenta de google para el centro de datos. 
-Dicha cuenta es para tener acceso al github del proyecto.
+Repositorio del proyecto
+
+El repositorio contiene los siguientes directorios:
+	- archivos_ditto: Archivos para eclipse ditto. Se trata principalmente de things que se han ido creando y reglas de conexiones MQTT.
+	- blender_python_files: Archivos con escenas de blender (.blend) y ficheros python de scripting para blender (no utilizado en producción)
+	- codigo_nodos_ota_rollback: Código referente a los nodos. Contiene un proyecto de ESP-IDF sin la carpeta build.
+	- influx_module: Módulo de Influxdb
+	- ota_images: Carpeta que contiene el servidor https para las actualizaciones OTA y la imagen a cargar en formato .bin
+	- python_server_blender: Módulo de representación de datos - servidor de python.
+	- server_alarmas: Módulo de alarmas. Contiene el bot de telegram
+	- verge3D_vue_app: Módulo de representación de datos - servidor front-end hecho con verge3D, vue.js y blender.
+
+
+
 
 Para clonar el repositorio de github es necesario usar el siguiente comando:
 git clone git@github.com:datacenterUCM/datacenter.git
