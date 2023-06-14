@@ -9,5 +9,4 @@
 /python_server_blender/server.log
 
 
-/python_server_blender/Secrets
-./secrets.txt
+/python_server_blender/Secrets.py
